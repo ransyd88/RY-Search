@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R&Y | 智能中心</title>
+    <style>
+        :root { 
+            --primary: #b0c4de; 
+            /* 中性马卡龙：奶油灰、低饱和蓝、莫兰迪粉的平滑过渡 */
+            --bg-gradient: linear-gradient(135deg, #f2f4f7 0%, #e8eff9 50%, #f4e8ed 100%); 
+            --text-main: #4a5568;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-gradient); 
+            background-attachment: fixed;
+            color: var(--text-main); 
+            margin: 0; 
+            min-height: 100vh; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* 顶部导航 */
+        .header-bar {
+            width: 90%; max-width: 850px;
+            display: flex; justify-content: flex-end; padding: 25px 0;
+        }
+        .nav-link {
+            color: var(--text-main); text-decoration: none; font-size: 0.85rem;
+            padding: 8px 18px; border-radius: 20px; 
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); 
+            transition: 0.3s; margin-left: 10px;
+        }
+        .nav-link:hover { background: white; transform: translateY(-1px); }
+
+        /* 主容器 */
+        .main-container { width: 90%; max-width: 750px; text-align: center; }
+        
+        .logo { 
+            font-size: 3.5rem; font-weight: 800; margin-bottom: 25px; 
+            letter-spacing: -1.5px; color: #5d6d7e;
+        }
+
+        /* 搜索框 */
+        .search-box { margin-bottom: 25px; }
+        .search-input {
+            width: 100%; padding: 18px 30px; border-radius: 50px; 
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.5); 
+            color: #2c3e50; font-size: 1.1rem; outline: none; 
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            box-sizing: border-box; transition: 0.3s;
+        }
+        .search-input:focus { background: white; border-color: var(--primary); }
+
+        .ai-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
+        .btn {
+            background: rgba(255, 255, 255, 0.6); border: none; color: var(--text-main);
+            padding: 10px 25px; border-radius: 25px; cursor: pointer;
+            font-weight: 500; transition: 0.3s;
+        }
+        .btn:hover { background: white; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+        /* 布局顺序调整：日历在上 */
+        .calendar-card {
+            border-radius: 25px; overflow: hidden; 
+            background: rgba(255, 255, 255, 0.3); border: 1px solid rgba(255, 255, 255, 0.5); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.02); margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+        }
+        iframe { border: none; opacity: 0.9; }
+
+        /* 布局顺序调整：天气在下（澳洲常用风格） */
+        .weather-card {
+            background: rgba(255, 255, 255, 0.3); border-radius: 25px;
+            padding: 10px; margin-bottom: 50px; border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <a href="https://192-168-0-73.boyjir.direct.quickconnect.to:5001/#/signin" class="nav-link" target="_blank">NAS</a>
+        <a href="https://mail.google.com" class="nav-link" target="_blank">Gmail</a>
+    </div>
+
+    <div class="main-container">
+        <div class="logo">R&Y</div>
+        
+        <div class="search-box">
+            <form action="https://www.google.com/search" method="get" target="_blank">
+                <input type="text" id="searchInput" name="q" class="search-input" placeholder="Search Google..." autofocus autocomplete="off">
+            </form>
+        </div>
+
+        <div class="ai-buttons">
+            <button class="btn" onclick="goToAI('chatgpt')">✨ ChatGPT</button>
+            <button class="btn" onclick="goToAI('gemini')">💎 Gemini</button>
+        </div>
+
+        <div class="calendar-card">
+            <iframe src="https://calendar.google.com/calendar/embed?src=en.australian%23holiday%40group.v.calendar.google.com&src=zh-cn.china%23holiday%40group.v.calendar.google.com&ctz=Australia%2FSydney" width="100%" height="450"></iframe>
+        </div>
+
+        <div class="weather-card">
+            <a class="weatherwidget-io" href="https://forecast7.com/en/n33d87151d21/sydney/" data-label_1="SYDNEY" data-label_2="WEATHER" data-font="Ubuntu" data-icons="Climacons Animated" data-days="7" data-theme="pure" data-basecolor="rgba(255, 255, 255, 0)" data-accent="rgba(255, 255, 255, 0)" data-textcolor="#4a5568" >SYDNEY WEATHER</a>
+        </div>
+    </div>
+
+    <script>
+        /* WeatherWidget.io 脚本 */
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+
+        function goToAI(type){
+            const query = document.getElementById("searchInput").value;
+            let url = type === 'chatgpt' 
+                ? (query ? `https://chatgpt.com/?q=${encodeURIComponent(query)}` : "https://chatgpt.com")
+                : (query ? `https://gemini.google.com/app?q=${encodeURIComponent(query)}` : "https://gemini.google.com");
+            window.open(url, "_blank");
+        }
+    </script>
+</body>
+</html>
