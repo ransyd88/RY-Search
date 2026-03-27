@@ -9,56 +9,31 @@ body {
   margin: 0;
   height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: radial-gradient(circle at 20% 20%, #1e293b, #020617);
+  background: linear-gradient(135deg, #ffd6e0, #e0f7fa, #e7e0ff);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #333;
 }
 
-/* 光晕 */
-body::before {
-  content: "";
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(56,189,248,0.4), transparent);
-  top: -200px;
-  left: -200px;
-  filter: blur(120px);
-}
-
-body::after {
-  content: "";
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(168,85,247,0.4), transparent);
-  bottom: -200px;
-  right: -200px;
-  filter: blur(120px);
-}
-
+/* 主卡片 */
 .app {
-  width: 420px;
-  padding: 30px;
-  border-radius: 30px;
-  backdrop-filter: blur(40px);
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  position: relative;
-  z-index: 1;
+  width: 460px;
+  padding: 25px;
+  border-radius: 28px;
+  backdrop-filter: blur(30px);
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 /* 时间 */
 .top-bar {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 #time {
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 600;
 }
 
@@ -70,63 +45,57 @@ body::after {
 /* 图标 */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
 }
 
 .icon {
   text-align: center;
-  padding: 18px;
-  border-radius: 18px;
+  padding: 12px;
+  border-radius: 16px;
   text-decoration: none;
-  color: white;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.25s ease;
-}
-
-.icon div {
-  font-size: 26px;
-  margin-bottom: 8px;
-}
-
-.icon span {
-  font-size: 13px;
+  color: #333;
+  background: rgba(255,255,255,0.7);
+  transition: 0.2s;
 }
 
 .icon:hover {
-  transform: translateY(-4px);
-  background: rgba(255,255,255,0.12);
-  box-shadow: 0 0 20px rgba(56,189,248,0.4);
+  transform: translateY(-3px);
+  background: white;
 }
 
-/* 孕期卡片 */
-.pregnancy-card {
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.12);
-  text-align: center;
+.icon div {
+  font-size: 22px;
 }
 
-.pregnancy-title {
+.icon span {
+  font-size: 12px;
+}
+
+/* 卡片 */
+.card {
+  margin-top: 15px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.7);
+}
+
+/* 孕期 */
+.pregnancy-main {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.small {
   font-size: 13px;
   opacity: 0.7;
-  margin-bottom: 8px;
 }
 
-.pregnancy-main {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.pregnancy-sub {
-  font-size: 13px;
-  opacity: 0.8;
-  margin-top: 5px;
+/* iframe */
+iframe {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
 }
 </style>
 </head>
@@ -140,33 +109,43 @@ body::after {
     <div id="date"></div>
   </div>
 
+  <!-- 快捷入口 -->
   <div class="grid">
     <a href="https://chat.openai.com" target="_blank" class="icon">
-      <div>🤖</div>
-      <span>ChatGPT</span>
+      <div>🤖</div><span>ChatGPT</span>
     </a>
-
     <a href="https://gemini.google.com" target="_blank" class="icon">
-      <div>✨</div>
-      <span>Gemini</span>
+      <div>✨</div><span>Gemini</span>
     </a>
-
     <a href="https://192.168.0.73:5001/" target="_blank" class="icon">
-      <div>💾</div>
-      <span>NAS</span>
+      <div>💾</div><span>NAS</span>
     </a>
-
     <a href="https://mail.google.com" target="_blank" class="icon">
-      <div>📧</div>
-      <span>Gmail</span>
+      <div>📧</div><span>Gmail</span>
     </a>
   </div>
 
-  <div class="pregnancy-card">
-    <div class="pregnancy-title">Yanni Pregnancy</div>
+  <!-- 孕期 -->
+  <div class="card">
     <div class="pregnancy-main" id="weeks"></div>
-    <div class="pregnancy-sub" id="days"></div>
-    <div class="pregnancy-sub" id="edd"></div>
+    <div class="small" id="days"></div>
+    <div class="small" id="edd"></div>
+  </div>
+
+  <!-- 天气 -->
+  <div class="card">
+    <iframe 
+      src="https://wttr.in/Sydney?format=3"
+      style="height:40px">
+    </iframe>
+  </div>
+
+  <!-- 日历 -->
+  <div class="card">
+    <iframe 
+      src="https://calendar.google.com/calendar/embed?mode=AGENDA"
+      style="height:200px">
+    </iframe>
   </div>
 
 </div>
@@ -175,30 +154,30 @@ body::after {
 function updateAll() {
   const now = new Date();
 
-  // 时间
   document.getElementById("time").innerText =
     now.toLocaleTimeString("en-AU");
+
   document.getElementById("date").innerText =
     now.toDateString();
 
-  // IVF移植时间
   const transfer = new Date("2026-02-05T09:00:00+11:00");
-
-  // Day5胚胎 = 2周5天
   const baseDays = 19;
 
-  const diffDays = Math.floor((now - transfer) / (1000*60*60*24));
+  const diffDays = Math.floor((now - transfer)/(1000*60*60*24));
   const totalDays = baseDays + diffDays;
 
-  const weeks = Math.floor(totalDays / 7);
+  const weeks = Math.floor(totalDays/7);
   const days = totalDays % 7;
 
-  // 预产期
   const edd = new Date(transfer);
-  edd.setDate(edd.getDate() + 261);
+  edd.setDate(edd.getDate()+261);
 
-  document.getElementById("weeks").innerText = weeks + "w " + days + "d";
-  document.getElementById("days").innerText = totalDays + " days pregnant";
+  document.getElementById("weeks").innerText =
+    weeks + "w " + days + "d";
+
+  document.getElementById("days").innerText =
+    totalDays + " days pregnant";
+
   document.getElementById("edd").innerText =
     "EDD: " + edd.toDateString();
 }
