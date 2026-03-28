@@ -6,204 +6,203 @@
     <title>RY Premium Dashboard</title>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.25);
-            --glass-heavy: rgba(255, 255, 255, 0.4);
-            --text-main: #2c3e50;
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-heavy: rgba(255, 255, 255, 0.3);
+            --text-main: #1d1d1f;
+            --accent: #ff8fa3;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            padding: 0;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'PingFang SC', 'Helvetica Neue', 'Arial', sans-serif;
-            /* 渐变背景更柔和大气 */
-            background: linear-gradient(45deg, #fce4ec 0%, #e1f5fe 50%, #f3e5f5 100%);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
+            /* 更有质感的极简渐变 */
+            background: radial-gradient(circle at top left, #fce4ec, #e3f2fd 40%, #f3e5f5 100%);
             overflow: hidden;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            color: var(--text-main);
         }
 
         .container {
-            width: 90vw;
-            max-width: 1200px;
-            height: 80vh;
+            width: 95vw;
+            max-width: 1400px;
+            height: 85vh;
             display: grid;
-            grid-template-columns: 1.2fr 2fr;
-            gap: 24px;
+            grid-template-columns: 350px 1fr 380px; /* 三栏布局：时间天气 | 日历 | 功能进度 */
+            gap: 30px;
             padding: 40px;
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 40px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.05);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.05);
         }
 
-        /* 左侧：时间与天气 */
-        .left-panel {
+        /* 第一栏：时间与精致天气 */
+        .left-col {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
 
-        #time-display {
-            font-size: 80px;
+        #time-now {
+            font-size: 90px;
             font-weight: 200;
-            color: var(--text-main);
+            letter-spacing: -4px;
             margin: 0;
-            letter-spacing: -2px;
-            font-variant-numeric: tabular-nums;
+            line-height: 1;
         }
 
-        #date-display {
-            font-size: 20px;
+        #date-now {
+            font-size: 22px;
+            font-weight: 400;
             opacity: 0.6;
-            margin-top: -10px;
-            margin-bottom: 30px;
+            margin-top: 10px;
         }
 
-        .weather-box {
-            flex-grow: 1;
-            background: var(--glass-heavy);
-            border-radius: 30px;
-            overflow: hidden;
+        /* 重新设计的天气 UI */
+        .weather-card-new {
+            background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2));
+            padding: 30px;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.3);
+            margin-top: 40px;
+        }
+
+        .weather-info {
             display: flex;
             align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* 解决下载问题的方案：使用 iframe 嵌入并隐藏滚动条 */
-        .weather-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            filter: contrast(90%) brightness(105%);
-        }
-
-        /* 右侧：功能与进度 */
-        .right-panel {
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-            gap: 20px;
-        }
-
-        .pregnancy-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
-            padding: 30px;
-            border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(255, 182, 193, 0.2);
-        }
-
-        #weeks-text {
-            font-size: 48px;
-            font-weight: 700;
-            color: #ff8fa3;
-            margin-bottom: 5px;
-        }
-
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
         }
 
-        .nav-btn {
+        .weather-temp {
+            font-size: 56px;
+            font-weight: 300;
+        }
+
+        .weather-icon {
+            font-size: 50px;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        .weather-desc {
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        /* 第二栏：大面积日历区 */
+        .mid-col {
             background: var(--glass-heavy);
-            padding: 20px 10px;
-            border-radius: 20px;
+            border-radius: 40px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* 第三栏：孕期进度与导航 */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .preg-status {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(255, 143, 163, 0.15);
+        }
+
+        #weeks-display {
+            font-size: 52px;
+            font-weight: 800;
+            color: var(--accent);
+            display: block;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .nav-item {
+            background: var(--glass-heavy);
+            padding: 25px 15px;
+            border-radius: 30px;
             text-decoration: none;
             color: var(--text-main);
-            transition: all 0.3s;
             text-align: center;
-            border: 1px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .nav-btn:hover {
-            background: #fff;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        .nav-item:hover {
+            background: white;
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.05);
         }
 
-        .nav-btn div { font-size: 28px; margin-bottom: 8px; }
-        .nav-btn span { font-size: 13px; font-weight: 500; opacity: 0.8; }
+        .nav-item div { font-size: 32px; margin-bottom: 5px; }
+        .nav-item span { font-size: 14px; font-weight: 600; opacity: 0.7; }
 
-        .calendar-box {
-            background: var(--glass-heavy);
-            border-radius: 30px;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        .calendar-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .small-info { font-size: 14px; opacity: 0.5; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="left-panel">
+    <div class="left-col">
         <div>
-            <h1 id="time-display">00:00</h1>
-            <div id="date-display">Loading...</div>
+            <div id="time-now">00:00</div>
+            <div id="date-now">Loading...</div>
         </div>
-        
-        <div class="weather-box">
-            <iframe class="weather-frame" src="https://wttr.in/Sydney?1&m&n&q&T"></iframe>
+
+        <div class="weather-card-new">
+            <div class="weather-info">
+                <div class="weather-icon" id="w-icon">☀️</div>
+                <div class="weather-temp">24°</div>
+            </div>
+            <div class="weather-desc">Sydney · 晴朗</div>
+            <div style="font-size: 14px; opacity: 0.5; margin-top: 10px;">空气质量：优 (22)</div>
         </div>
     </div>
 
-    <div class="right-panel">
-        <div class="pregnancy-card">
-            <div id="weeks-text">--w --d</div>
-            <div style="font-size: 18px; color: #7f8c8d;" id="days-total">Counting...</div>
-            <div class="small-info" id="edd-text">EDD: --</div>
+    <div class="mid-col">
+        <iframe src="https://calendar.google.com/calendar/embed?mode=AGENDA&ctz=Australia/Sydney&showTitle=0&showNav=0&showPrint=0&showTabs=0&showCalendars=0&hl=en_GB"></iframe>
+    </div>
+
+    <div class="right-col">
+        <div class="preg-status">
+            <span id="weeks-display">--w --d</span>
+            <div style="margin-top: 10px; font-size: 18px; color: #666;" id="days-total">Counting...</div>
+            <div style="font-size: 14px; opacity: 0.4; margin-top: 15px;" id="edd-date">EDD: --</div>
         </div>
 
-        <div class="calendar-box">
-            <iframe class="calendar-iframe" src="https://calendar.google.com/calendar/embed?mode=AGENDA&ctz=Australia/Sydney&showTitle=0&showNav=0&showPrint=0&showTabs=0&showCalendars=0"></iframe>
-        </div>
-
-        <div class="status-grid">
-            <a href="https://gemini.google.com" target="_blank" class="nav-btn">
-                <div>✨</div><span>Gemini</span>
-            </a>
-            <a href="https://chat.openai.com" target="_blank" class="nav-btn">
-                <div>🤖</div><span>ChatGPT</span>
-            </a>
-            <a href="https://192.168.0.73:5001/" target="_blank" class="nav-btn">
-                <div>💾</div><span>NAS</span>
-            </a>
-            <a href="https://mail.google.com" target="_blank" class="nav-btn">
-                <div>📧</div><span>Gmail</span>
-            </a>
+        <div class="nav-grid">
+            <a href="https://gemini.google.com" target="_blank" class="nav-item"><div>✨</div><span>Gemini</span></a>
+            <a href="https://chat.openai.com" target="_blank" class="nav-item"><div>🤖</div><span>ChatGPT</span></a>
+            <a href="https://192.168.0.73:5001/" target="_blank" class="nav-item"><div>💾</div><span>NAS</span></a>
+            <a href="https://mail.google.com" target="_blank" class="nav-item"><div>📧</div><span>Gmail</span></a>
         </div>
     </div>
 </div>
 
 <script>
-    function updateDashboard() {
+    function update() {
         const now = new Date();
         
-        // 更新时间 (HH:mm)
-        const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
-        document.getElementById("time-display").innerText = timeStr;
-        document.getElementById("date-display").innerText = now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+        // 时间日期
+        document.getElementById("time-now").innerText = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
+        document.getElementById("date-now").innerText = now.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
 
         // IVF 逻辑
         const transfer = new Date("2026-02-05T09:00:00+11:00");
@@ -213,18 +212,21 @@
 
         const weeks = Math.floor(totalDays / 7);
         const days = totalDays % 7;
-
         const edd = new Date(transfer);
         edd.setDate(edd.getDate() + 261);
 
-        document.getElementById("weeks-text").innerText = `${weeks}w ${days}d`;
+        document.getElementById("weeks-display").innerText = `${weeks}w ${days}d`;
         document.getElementById("days-total").innerText = `第 ${totalDays} 天 · 准妈妈加油`;
-        document.getElementById("edd-text").innerText = `预产期 (EDD): ${edd.toLocaleDateString('en-AU', { year:'numeric', month:'long', day:'numeric' })}`;
+        document.getElementById("edd-date").innerText = `预产期: ${edd.toLocaleDateString('zh-CN')}`;
+
+        // 模拟天气更新逻辑 (你可以根据时间改变图标)
+        const hour = now.getHours();
+        const icon = (hour > 6 && hour < 18) ? "☀️" : "🌙";
+        document.getElementById("w-icon").innerText = icon;
     }
 
-    // 初始化和定时器
-    updateDashboard();
-    setInterval(updateDashboard, 1000 * 60); // 每分钟更新一次即可，省电且大气
+    update();
+    setInterval(update, 30000);
 </script>
 
 </body>
