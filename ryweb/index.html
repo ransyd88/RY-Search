@@ -2,16 +2,17 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RY Home OS</title>
+    <title>RY Home Dashboard Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --accent: #ff8fa3; 
-            --glass: rgba(255, 255, 255, 0.35);
-            --bg-gradient: linear-gradient(135deg, #fce4ec 0%, #e1f5fe 100%);
+            --glass: rgba(255, 255, 255, 0.25);
+            --text-main: #1d1d1f;
         }
 
-        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        * { box-sizing: border-box; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
         body {
             margin: 0;
@@ -19,108 +20,130 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
-            background: var(--bg-gradient);
+            font-family: 'Inter', -apple-system, "PingFang SC", sans-serif;
+            /* 更加深邃的动态渐变 */
+            background: linear-gradient(-45deg, #fce4ec, #e3f2fd, #fff9c4, #f3e5f5);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             overflow: hidden;
-            color: #1d1d1f;
+            color: var(--text-main);
+            cursor: default;
         }
 
-        .main-container {
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-stage {
             width: 96vw;
-            max-width: 1500px;
+            max-width: 1550px;
             height: 88vh;
             display: grid;
-            grid-template-columns: 380px 1fr 380px;
+            grid-template-columns: 380px 1fr 400px;
             gap: 25px;
             padding: 30px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border-radius: 55px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(45px);
+            -webkit-backdrop-filter: blur(45px);
+            border-radius: 60px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 40px 100px rgba(0,0,0,0.05);
         }
 
-        /* 统一卡片 */
         .card {
             background: var(--glass);
-            border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 45px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 30px;
+            overflow: hidden;
         }
 
-        /* 左栏：时钟与天气 */
+        /* 左栏 */
         .left-panel { display: flex; flex-direction: column; justify-content: space-between; }
-        #clock { font-size: 100px; font-weight: 200; letter-spacing: -5px; margin: 0; }
-        #date { font-size: 20px; opacity: 0.5; margin: -10px 0 30px 5px; }
-        
-        .weather-info { text-align: left; }
-        .temp { font-size: 45px; font-weight: 300; margin: 10px 0; }
+        #clock { font-size: 110px; font-weight: 100; letter-spacing: -6px; margin: 0; line-height: 1; }
+        #date { font-size: 22px; font-weight: 300; opacity: 0.6; margin: 10px 0 30px 5px; }
 
-        /* 中栏：日历 (核心优化) */
+        /* 天气插件容器 */
+        .weather-container { min-height: 150px; position: relative; }
+
+        /* 中栏：私人日历 */
         .calendar-panel {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50px;
             position: relative;
-            background: rgba(255, 255, 255, 0.5);
-            overflow: hidden;
-            border-radius: 45px;
         }
         .calendar-frame {
             width: 100%;
-            height: calc(100% + 50px); /* 稍微拉高以隐藏底部的 Google Logo */
+            height: calc(100% + 40px);
             margin-top: -10px;
             border: none;
-            filter: contrast(0.85) saturate(0.8);
+            filter: contrast(0.9) saturate(0.7) opacity(0.9);
         }
 
-        /* 右栏：孕期与捷径 */
+        /* 右栏 */
         .right-panel { display: flex; flex-direction: column; gap: 20px; }
-        .preg-card { text-align: center; background: white; padding: 40px 20px; }
-        #weeks-val { font-size: 58px; font-weight: 800; color: var(--accent); display: block; }
+        .preg-card { 
+            text-align: center; 
+            background: rgba(255, 255, 255, 0.8); 
+            box-shadow: 0 20px 40px rgba(255, 143, 163, 0.15);
+        }
+        #weeks-val { font-size: 64px; font-weight: 800; color: var(--accent); letter-spacing: -2px; }
+        #baby-status { font-size: 15px; color: #7f8c8d; margin-top: 12px; line-height: 1.5; font-weight: 500; }
 
         .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .nav-item {
-            background: var(--glass);
-            padding: 25px 10px;
-            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 22px 10px;
+            border-radius: 35px;
             text-decoration: none;
-            color: #333;
+            color: #444;
             text-align: center;
             font-size: 13px;
             font-weight: 600;
         }
-        .nav-item:hover { transform: translateY(-5px); background: white; }
-        .nav-item div { font-size: 30px; margin-bottom: 8px; }
+        .nav-item:hover { transform: scale(1.05); background: white; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .nav-item div { font-size: 32px; margin-bottom: 6px; }
 
-        .motto { flex-grow: 1; font-size: 15px; line-height: 1.8; color: #555; }
+        .note-card { flex-grow: 1; font-size: 14px; line-height: 1.8; background: var(--glass); color: #555; position: relative;}
+        .note-card strong { color: var(--text-main); font-size: 16px; }
+        
+        /* 全屏提示词 */
+        .fullscreen-tip {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            font-size: 10px; opacity: 0.2; letter-spacing: 2px; text-transform: uppercase;
+        }
     </style>
 </head>
-<body>
+<body ondblclick="toggleFullScreen()">
 
-<div class="main-container">
+<div class="main-stage">
     <div class="left-panel">
         <div>
             <h1 id="clock">00:00</h1>
             <div id="date">Loading...</div>
         </div>
-        <div class="card weather-info">
-            <div style="font-size: 50px;">☀️</div>
-            <div class="temp">24°C</div>
-            <div style="font-size: 18px; opacity: 0.7;">Sydney · 晴朗</div>
-            <div style="font-size: 13px; opacity: 0.4; margin-top: 15px;">空气优 · 适合带 Toffee 散步 🐾</div>
+        
+        <div class="card weather-container">
+            <a class="weatherwidget-io" href="https://forecast7.com/en/n33_74150_98/norwest/" data-label_1="NORWEST" data-label_2="SYDNEY" data-icons="Climacons Animated" data-mode="Current" data-theme="pure" >NORWEST SYDNEY</a>
+            <script>
+            !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+            </script>
         </div>
     </div>
 
-    <div class="calendar-panel">
+    <div class="calendar-panel card">
         <iframe class="calendar-frame" 
-                src="https://calendar.google.com/calendar/embed?mode=AGENDA&src=ransyd88%40gmail.com&ctz=Australia%2FSydney&showTitle=0&showNav=0&showPrint=0&showTabs=0&showCalendars=0&color=%23FF8FA3">
+                src="https://calendar.google.com/calendar/embed?mode=AGENDA&src=ransyd88%40gmail.com&ctz=Australia%2FSydney&showTitle=0&showNav=0&showPrint=0&showTabs=0&showCalendars=0&color=%23FF8FA3&hl=zh_CN">
         </iframe>
     </div>
 
     <div class="right-panel">
         <div class="card preg-card">
             <span id="weeks-val">--w --d</span>
-            <div id="total-days" style="font-size: 18px; color: #888; margin-top: 5px;"></div>
-            <div id="edd-val" style="font-size: 12px; opacity: 0.4; margin-top: 20px;"></div>
+            <div id="baby-status">正在计算宝宝状态...</div>
+            <div id="edd-val" style="font-size: 11px; opacity: 0.4; margin-top: 20px; letter-spacing: 1px;"></div>
         </div>
 
         <div class="nav-grid">
@@ -130,24 +153,30 @@
             <a href="https://192.168.0.73:5001/" target="_blank" class="nav-item"><div>💾</div><span>NAS</span></a>
         </div>
 
-        <div class="card motto">
-            <strong>💡 温馨提醒:</strong><br>
+        <div class="card note-card">
+            <strong>🏠 Norwest 生活助手</strong><br>
             • 检查 Yanni 的产检预约<br>
-            • GLA45S AMG 记得加 98 号油 ⛽<br>
-            • 给 AXC 公司的税务留点时间<br>
-            • 别忘了 Toffee 的零食 🐶
+            • GLA 45S 记得加 98 号油 ⛽<br>
+            • Toffee 的药和零食 🐶<br>
+            • AXC 公司税务整理<br>
+            <div style="margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px;">
+                <small>💡 提示：双击屏幕任意位置进入全屏模式</small>
+            </div>
         </div>
     </div>
 </div>
 
+<div class="fullscreen-tip">RY DASHBOARD PRO · 2026</div>
+
 <script>
-    function updateApp() {
+    function updateDashboard() {
         const now = new Date();
-        // 更新时钟
+        
+        // 1. 时间显示
         document.getElementById("clock").innerText = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
         document.getElementById("date").innerText = now.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
 
-        // IVF 怀孕周期逻辑
+        // 2. 怀孕数据核心逻辑
         const transfer = new Date("2026-02-05T09:00:00+11:00");
         const baseDays = 19; 
         const diffDays = Math.floor((now - transfer) / (1000 * 60 * 60 * 24));
@@ -158,12 +187,37 @@
         edd.setDate(edd.getDate() + 261);
 
         document.getElementById("weeks-val").innerText = `${weeks}w ${days}d`;
-        document.getElementById("total-days").innerText = `第 ${totalDays} 天 · 伴你同行`;
         document.getElementById("edd-val").innerText = `预产期 (EDD): ${edd.toLocaleDateString('zh-CN')}`;
+
+        // 3. 动态发育文案库
+        const growthInfo = {
+            7: "宝宝现在像颗蓝莓，心脏跳动非常有节奏。",
+            8: "宝宝像颗覆盆子，手脚的小芽正在悄悄萌发。",
+            9: "宝宝像颗樱桃，TA 正在你肚子里练习翻滚呢。",
+            10: "宝宝像颗金桔，所有重要器官已经初步成型。",
+            11: "宝宝像个无花果，正在尝试伸展 TA 的小拳头。",
+            12: "宝宝像个酸橙，TA 的骨骼开始变硬了哦。",
+            13: "宝宝像个豆荚，指纹已经开始形成了。",
+            14: "宝宝像个柠檬，TA 的脸部表情越来越丰富了。",
+        };
+
+        const currentTip = growthInfo[weeks] || "宝宝正在健康成长，记得多跟 TA 聊天哦！";
+        document.getElementById("baby-status").innerText = `第 ${totalDays} 天 · ${currentTip}`;
     }
 
-    updateApp();
-    setInterval(updateApp, 60000);
+    // 全屏切换功能
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    updateDashboard();
+    setInterval(updateDashboard, 60000);
 </script>
 
 </body>
