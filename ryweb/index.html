@@ -1,190 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>RY Dashboard</title>
 
-<style>
-body {
-  margin: 0;
-  height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, #ffd6e0, #e0f7fa, #e7e0ff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333;
-}
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #ffd6e0, #e0f7fa, #e7e0ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
 
-/* 主卡片 */
-.app {
-  width: 460px;
-  padding: 25px;
-  border-radius: 28px;
-  backdrop-filter: blur(30px);
-  background: rgba(255,255,255,0.6);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
+    .app {
+      width: 480px;
+      padding: 26px;
+      border-radius: 28px;
+      backdrop-filter: blur(30px);
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
 
-/* 时间 */
-.top-bar {
-  text-align: center;
-  margin-bottom: 20px;
-}
+    .top-bar {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    #time {
+      font-size: 32px;
+      font-weight: 600;
+    }
+    #date {
+      font-size: 14px;
+      opacity: 0.7;
+    }
 
-#time {
-  font-size: 32px;
-  font-weight: 600;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .icon {
+      text-align: center;
+      padding: 12px;
+      border-radius: 16px;
+      text-decoration: none;
+      color: #333;
+      background: rgba(255, 255, 255, 0.7);
+      transition: 0.2s;
+    }
+    .icon:hover {
+      transform: translateY(-3px);
+      background: #fff;
+    }
+    .icon div {
+      font-size: 22px;
+    }
+    .icon span {
+      font-size: 12px;
+    }
 
-#date {
-  font-size: 14px;
-  opacity: 0.7;
-}
+    .card {
+      margin-top: 15px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+    }
 
-/* 图标 */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
+    .pregnancy-main {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .small {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 6px;
+    }
 
-.icon {
-  text-align: center;
-  padding: 12px;
-  border-radius: 16px;
-  text-decoration: none;
-  color: #333;
-  background: rgba(255,255,255,0.7);
-  transition: 0.2s;
-}
+    .weather-img {
+      width: 100%;
+      border-radius: 14px;
+      display: block;
+    }
 
-.icon:hover {
-  transform: translateY(-3px);
-  background: white;
-}
-
-.icon div {
-  font-size: 22px;
-}
-
-.icon span {
-  font-size: 12px;
-}
-
-/* 卡片 */
-.card {
-  margin-top: 15px;
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.7);
-}
-
-/* 孕期 */
-.pregnancy-main {
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.small {
-  font-size: 13px;
-  opacity: 0.7;
-}
-
-/* iframe */
-iframe {
-  width: 100%;
-  border: none;
-  border-radius: 12px;
-}
-</style>
+    .calendar {
+      width: 100%;
+      height: 220px;
+      border: none;
+      border-radius: 14px;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="app">
+    <div class="top-bar">
+      <div id="time"></div>
+      <div id="date"></div>
+    </div>
 
-<div class="app">
+    <div class="grid">
+      <a href="https://chat.openai.com" target="_blank" class="icon">
+        <div>🤖</div>
+        <span>ChatGPT</span>
+      </a>
+      <a href="https://gemini.google.com" target="_blank" class="icon">
+        <div>✨</div>
+        <span>Gemini</span>
+      </a>
+      <a href="https://192.168.0.73:5001/" target="_blank" class="icon">
+        <div>💾</div>
+        <span>NAS</span>
+      </a>
+      <a href="https://mail.google.com" target="_blank" class="icon">
+        <div>📧</div>
+        <span>Gmail</span>
+      </a>
+    </div>
 
-  <div class="top-bar">
-    <div id="time"></div>
-    <div id="date"></div>
+    <div class="card">
+      <div class="pregnancy-main" id="weeks"></div>
+      <div class="small" id="days"></div>
+      <div class="small" id="edd"></div>
+    </div>
+
+    <div class="card">
+      <!-- 稳定：weather 图片，不用 iframe，不会触发下载 -->
+      <img class="weather-img" src="https://wttr.in/Sydney.png" alt="Sydney Weather" />
+    </div>
+
+    <div class="card">
+      <!-- Calendar：需要你谷歌登录才显示 -->
+      <iframe
+        class="calendar"
+        src="https://calendar.google.com/calendar/embed?mode=AGENDA&ctz=Australia/Sydney"
+      ></iframe>
+    </div>
   </div>
 
-  <!-- 快捷入口 -->
-  <div class="grid">
-    <a href="https://chat.openai.com" target="_blank" class="icon">
-      <div>🤖</div><span>ChatGPT</span>
-    </a>
-    <a href="https://gemini.google.com" target="_blank" class="icon">
-      <div>✨</div><span>Gemini</span>
-    </a>
-    <a href="https://192.168.0.73:5001/" target="_blank" class="icon">
-      <div>💾</div><span>NAS</span>
-    </a>
-    <a href="https://mail.google.com" target="_blank" class="icon">
-      <div>📧</div><span>Gmail</span>
-    </a>
-  </div>
+  <script>
+    function updateAll() {
+      const now = new Date();
 
-  <!-- 孕期 -->
-  <div class="card">
-    <div class="pregnancy-main" id="weeks"></div>
-    <div class="small" id="days"></div>
-    <div class="small" id="edd"></div>
-  </div>
+      document.getElementById("time").innerText = now.toLocaleTimeString("en-AU");
+      document.getElementById("date").innerText = now.toDateString();
 
-  <!-- 天气 -->
-  <div class="card">
-    <iframe 
-      src="https://wttr.in/Sydney?format=3"
-      style="height:40px">
-    </iframe>
-  </div>
+      // IVF transfer: 2026-02-05 09:00 Sydney time
+      const transfer = new Date("2026-02-05T09:00:00+11:00");
+      const baseDays = 19; // Day5 embryo = 2w5d = 19 days
 
-  <!-- 日历 -->
-  <div class="card">
-    <iframe 
-      src="https://calendar.google.com/calendar/embed?mode=AGENDA"
-      style="height:200px">
-    </iframe>
-  </div>
+      const diffDays = Math.floor((now - transfer) / (1000 * 60 * 60 * 24));
+      const totalDays = baseDays + diffDays;
 
-</div>
+      const weeks = Math.floor(totalDays / 7);
+      const days = totalDays % 7;
 
-<script>
-function updateAll() {
-  const now = new Date();
+      // EDD = transfer + 261 days
+      const edd = new Date(transfer);
+      edd.setDate(edd.getDate() + 261);
 
-  document.getElementById("time").innerText =
-    now.toLocaleTimeString("en-AU");
+      document.getElementById("weeks").innerText = `${weeks}w ${days}d`;
+      document.getElementById("days").innerText = `${totalDays} days pregnant`;
+      document.getElementById("edd").innerText = `EDD: ${edd.toDateString()}`;
+    }
 
-  document.getElementById("date").innerText =
-    now.toDateString();
-
-  const transfer = new Date("2026-02-05T09:00:00+11:00");
-  const baseDays = 19;
-
-  const diffDays = Math.floor((now - transfer)/(1000*60*60*24));
-  const totalDays = baseDays + diffDays;
-
-  const weeks = Math.floor(totalDays/7);
-  const days = totalDays % 7;
-
-  const edd = new Date(transfer);
-  edd.setDate(edd.getDate()+261);
-
-  document.getElementById("weeks").innerText =
-    weeks + "w " + days + "d";
-
-  document.getElementById("days").innerText =
-    totalDays + " days pregnant";
-
-  document.getElementById("edd").innerText =
-    "EDD: " + edd.toDateString();
-}
-
-setInterval(updateAll, 1000);
-updateAll();
-</script>
-
+    setInterval(updateAll, 1000);
+    updateAll();
+  </script>
 </body>
 </html>
