@@ -44,9 +44,20 @@ The deployment output is written to `dist/`.
 
 ## Deployment
 
-For Cloudflare Pages, connect the repository, use the production build command above, and publish the generated `dist/` output using the project’s Cloudflare configuration.
+This is a full-stack Cloudflare Workers application rather than a static Pages
+export. In Cloudflare, connect this GitHub repository under **Workers & Pages**
+and use:
 
-For GitHub Pages, use a static-export-compatible build configuration or serve the compiled static assets from a Pages branch. The included production setup is optimized for Cloudflare Workers/Sites.
+```text
+Production branch: main
+Build command: npm run build
+Deploy command: npm run deploy:cloudflare
+```
+
+The build creates `dist/server/wrangler.json`; the deploy script publishes that
+server bundle and its client assets. Add the Supabase variables described below
+to both the Cloudflare build environment and the Worker runtime environment
+before enabling the private portal.
 
 ## Editing guide
 

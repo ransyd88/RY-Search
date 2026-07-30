@@ -383,6 +383,11 @@ img {
   margin-left: clamp(18px, 3vw, 52px);
 }
 
+.language-en .hero h1 span:last-child {
+  margin-bottom: -0.2em;
+  padding-bottom: 0.2em;
+}
+
 .language-zh .hero h1 {
   font-size: clamp(54px, min(6vw, 8vh), 94px);
   letter-spacing: 0.015em;
@@ -1047,11 +1052,11 @@ img {
 
 @keyframes mask-up {
   from {
-    clip-path: inset(100% 0 0);
+    clip-path: inset(100% -0.14em -0.3em -0.14em);
     transform: translateY(28px);
   }
   to {
-    clip-path: inset(0);
+    clip-path: inset(0 -0.14em -0.3em -0.14em);
     transform: translateY(0);
   }
 }
