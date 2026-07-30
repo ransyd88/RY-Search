@@ -297,7 +297,7 @@ img {
   background: var(--soft-ivory);
   display: grid;
   grid-template-columns: 51% 49%;
-  min-height: 100svh;
+  min-height: clamp(760px, 88svh, 960px);
   overflow: hidden;
   padding-left: var(--pad);
   position: relative;
@@ -445,7 +445,7 @@ img {
 
 .hero-visual {
   animation: image-reveal 1.4s 250ms both cubic-bezier(0.2, 0.7, 0.2, 1);
-  min-height: 100svh;
+  min-height: clamp(760px, 88svh, 960px);
   overflow: hidden;
   position: relative;
 }
