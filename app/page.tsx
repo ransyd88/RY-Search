@@ -11,7 +11,7 @@ const homeContent = {
     privateAccess: "Private Access",
     location: "Sydney, Australia",
     heroTitle: ["Built for the", "Long Term"],
-    heroLead: "An independent investment company based in Sydney.",
+    heroLead: "A privately held investment company based in Sydney.",
     heroNote:
       "Investing proprietary capital with patience, discipline and a long-term perspective.",
     discover: "Discover R&Y",
@@ -20,7 +20,7 @@ const homeContent = {
     aboutLabel: "About",
     aboutTitle: ["Private Capital.", "Long-Term Perspective."],
     aboutCopy: [
-      "R&Y Capital is an independent investment company based in Sydney.",
+      "R&Y Capital is a privately held investment company based in Sydney.",
       "We invest and manage proprietary capital with a long-term perspective, focused across property, public markets, private credit and private enterprise.",
       "Our approach is patient, selective and independent.",
     ],
@@ -56,7 +56,7 @@ const homeContent = {
     privateAccess: "私人访问",
     location: "澳大利亚 · 悉尼",
     heroTitle: ["立足长远", "恒久致远"],
-    heroLead: "一家立足悉尼、专注长期价值的投资公司。",
+    heroLead: "一家总部位于悉尼的私人投资公司。",
     heroNote: "以耐心、纪律与长期视角管理和投资自有资本。",
     discover: "了解 R&Y",
     imageCaption: "石材 / 玻璃 / 自然光",
@@ -64,7 +64,7 @@ const homeContent = {
     aboutLabel: "关于我们",
     aboutTitle: ["私人资本。", "长期视角。"],
     aboutCopy: [
-      "R&Y Capital 是一家立足悉尼、专注长期价值的投资公司。",
+      "R&Y Capital 是一家总部位于悉尼的私人投资公司。",
       "我们以长期视角管理和投资自有资本，重点布局房地产、公开市场、私人信贷及私人企业。",
       "我们坚持耐心、审慎与独立判断。",
     ],
