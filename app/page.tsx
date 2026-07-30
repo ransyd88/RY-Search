@@ -436,7 +436,7 @@ export default function Home() {
       </section>
 
       <footer id="contact" className="footer section-shell">
-        <div className="footer-top" data-reveal>
+        <div className="footer-top">
           <a className="footer-brand" href="#top">
             <BrandWordmark />
             <span>
@@ -449,7 +449,7 @@ export default function Home() {
             <span>{content.location}</span>
           </div>
         </div>
-        <div className="footer-bottom" data-reveal>
+        <div className="footer-bottom">
           <p>{content.disclaimer}</p>
           <div className="footer-legal">
             <span>{content.rights}</span>
