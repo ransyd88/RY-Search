@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import SydneyCapitalCanvas from "@/components/SydneyCapitalCanvas";
 
 type HomeLanguage = "en" | "zh";
 
@@ -322,8 +323,9 @@ export default function Home() {
                 language === "zh"
                   ? "自然光下的现代石材与玻璃建筑"
                   : "Contemporary stone and glass architecture in natural light"
-              }
+                }
             />
+            <SydneyCapitalCanvas language={language} />
             <span className="image-caption">{content.imageCaption}</span>
           </div>
           <div className="hero-line" />
