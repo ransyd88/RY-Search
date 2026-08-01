@@ -2583,7 +2583,7 @@ textarea {
 .research-brand span,
 .research-history-label {
   color: var(--champagne-light);
-  font-size: 7px;
+  font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -2602,7 +2602,7 @@ textarea {
   border: 1px solid rgba(222, 210, 181, 0.42);
   color: var(--soft-ivory);
   display: flex;
-  font-size: 8px;
+  font-size: 11px;
   gap: 11px;
   justify-content: center;
   letter-spacing: 0.13em;
@@ -2641,7 +2641,7 @@ textarea {
 .research-history-empty {
   color: rgba(251, 250, 247, 0.42);
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .research-history-row {
@@ -2683,7 +2683,7 @@ textarea {
 
 .research-history-row > button small {
   color: rgba(251, 250, 247, 0.35);
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 0.08em;
   margin-top: 4px;
   text-transform: uppercase;
@@ -2722,7 +2722,7 @@ textarea {
 
 .research-account p {
   color: rgba(251, 250, 247, 0.55);
-  font-size: 8px;
+  font-size: 10px;
   margin: 0 0 10px;
   overflow-wrap: anywhere;
 }
@@ -2730,7 +2730,7 @@ textarea {
 .research-account form button {
   background: transparent;
   color: var(--champagne-light);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.13em;
   padding: 0;
   text-transform: uppercase;
@@ -2755,7 +2755,7 @@ textarea {
 
 .research-header p {
   color: var(--blue-grey);
-  font-size: 7px;
+  font-size: 10px;
   letter-spacing: 0.18em;
   margin: 0 0 5px;
   text-transform: uppercase;
@@ -2806,13 +2806,13 @@ textarea {
 }
 
 .research-mode-switch strong {
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.16em;
 }
 
 .research-mode-switch small {
   color: inherit;
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.08em;
   margin-top: 4px;
   opacity: 0.86;
@@ -2891,7 +2891,7 @@ textarea {
   align-items: center;
   color: var(--muted-blue);
   display: flex;
-  font-size: 7px;
+  font-size: 10px;
   justify-content: space-between;
   letter-spacing: 0.13em;
   margin-bottom: 13px;
@@ -2974,7 +2974,7 @@ textarea {
 .research-copy {
   background: transparent;
   color: var(--muted-blue);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.13em;
   margin-top: 17px;
   padding: 0;
@@ -3020,7 +3020,7 @@ textarea {
 
 .research-composer-toolbar > span {
   color: var(--blue-grey);
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   line-height: 1.5;
   max-width: 240px;
@@ -3088,7 +3088,7 @@ textarea {
 .research-composer-meta {
   color: var(--muted-blue);
   display: flex;
-  font-size: 9px;
+  font-size: 11px;
   justify-content: space-between;
   letter-spacing: 0.04em;
   margin: 8px auto 0;
