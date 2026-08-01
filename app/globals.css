@@ -2770,29 +2770,18 @@ textarea {
   margin: 0;
 }
 
-.research-header-controls > span {
-  color: var(--muted-blue);
-  font-size: 7px;
-  letter-spacing: 0.1em;
-}
-
-.research-header-controls {
-  align-items: center;
-  display: flex;
-  gap: 22px;
-}
-
 .research-mode-switch {
+  background: rgba(247, 245, 240, 0.96);
   border: 1px solid var(--champagne-light);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .research-mode-switch button {
-  background: transparent;
-  color: var(--muted-blue);
-  min-width: 112px;
-  padding: 9px 13px 8px;
+  background: rgba(255, 255, 255, 0.3);
+  color: var(--deep-slate);
+  min-width: 138px;
+  padding: 11px 15px 10px;
   text-align: left;
   transition: background 220ms ease, color 220ms ease;
 }
@@ -2806,22 +2795,32 @@ textarea {
   color: var(--soft-ivory);
 }
 
+.research-mode-switch button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .research-mode-switch strong,
 .research-mode-switch small {
   display: block;
 }
 
 .research-mode-switch strong {
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.16em;
 }
 
 .research-mode-switch small {
   color: inherit;
-  font-size: 6px;
+  font-size: 8px;
   letter-spacing: 0.08em;
-  margin-top: 3px;
-  opacity: 0.72;
+  margin-top: 4px;
+  opacity: 0.86;
+}
+
+.research-mode-switch button.active small {
+  color: var(--champagne-light);
+  opacity: 1;
 }
 
 .research-menu {
@@ -2906,16 +2905,16 @@ textarea {
 .research-user-text {
   color: var(--deep-slate);
   font-family: var(--serif);
-  font-size: 20px;
-  line-height: 1.55;
+  font-size: 22px;
+  line-height: 1.62;
   margin: 0;
   white-space: pre-wrap;
 }
 
 .research-markdown {
   color: var(--dark-text);
-  font-size: 13px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.8;
   overflow-wrap: anywhere;
 }
 
@@ -2975,7 +2974,7 @@ textarea {
 .research-copy {
   background: transparent;
   color: var(--muted-blue);
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 0.13em;
   margin-top: 17px;
   padding: 0;
@@ -3011,6 +3010,23 @@ textarea {
   padding: 16px clamp(24px, 6vw, 96px) 22px;
 }
 
+.research-composer-toolbar {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto 10px;
+  max-width: 820px;
+}
+
+.research-composer-toolbar > span {
+  color: var(--blue-grey);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  max-width: 240px;
+  text-align: right;
+}
+
 .research-error {
   margin: 0 auto 9px;
   max-width: 820px;
@@ -3033,8 +3049,8 @@ textarea {
   color: var(--dark-text);
   flex: 1;
   font-family: var(--serif);
-  font-size: 17px;
-  line-height: 1.4;
+  font-size: 19px;
+  line-height: 1.45;
   max-height: 180px;
   min-height: 48px;
   outline: 0;
@@ -3072,7 +3088,7 @@ textarea {
 .research-composer-meta {
   color: var(--muted-blue);
   display: flex;
-  font-size: 7px;
+  font-size: 9px;
   justify-content: space-between;
   letter-spacing: 0.04em;
   margin: 8px auto 0;
@@ -3120,24 +3136,24 @@ textarea {
     padding: 12px 18px;
   }
 
-  .research-header-controls { margin-left: auto; }
-  .research-header-controls > span { display: none; }
-
   .research-chat { padding-top: 30px; }
 }
 
 @media (max-width: 600px) {
   .research-header h1 { font-size: 25px; }
-  .research-mode-switch button { min-width: 74px; padding: 8px 9px; }
-  .research-mode-switch small { display: none; }
+  .research-mode-switch { width: 100%; }
+  .research-mode-switch button { min-width: 0; padding: 9px 11px; }
+  .research-mode-switch small { font-size: 7px; }
   .research-chat { padding: 22px 18px 18px; }
   .research-empty { margin-top: 24px; }
   .research-empty h2 { font-size: clamp(45px, 15vw, 62px); }
   .research-empty > p:not(.access-eyebrow) { font-size: 18px; }
   .research-message.user { margin-left: 20px; }
   .research-composer-wrap { padding: 10px 14px max(12px, env(safe-area-inset-bottom)); }
+  .research-composer-toolbar { align-items: stretch; flex-direction: column; gap: 7px; }
+  .research-composer-toolbar > span { max-width: none; text-align: left; }
   .research-composer { gap: 8px; padding: 10px 10px 10px 14px; }
-  .research-composer textarea { font-size: 16px; min-height: 44px; }
+  .research-composer textarea { font-size: 18px; min-height: 44px; }
   .research-composer > button { min-width: 72px; padding: 13px 10px; }
   .research-composer-meta { align-items: flex-start; flex-direction: column; gap: 4px; line-height: 1.4; }
 }

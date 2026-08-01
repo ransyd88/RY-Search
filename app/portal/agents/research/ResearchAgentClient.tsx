@@ -8,6 +8,8 @@ import remarkGfm from "remark-gfm";
 import { LanguageSwitch, type SiteLanguage } from "@/components/LanguageSwitch";
 import { parseSseBuffer } from "@/lib/research-agent/sse";
 import { logout } from "@/app/portal/actions";
+import monogramSlate from "./assets/monogram-slate.png";
+import wordmarkWhite from "./assets/wordmark-white.png";
 
 type Conversation = {
   id: string;
@@ -289,7 +291,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
       <aside className={`research-sidebar${drawerOpen ? " open" : ""}`} aria-label={t.history}>
         <div className="research-sidebar-head">
           <Link className="research-brand" href={zh ? "/portal?lang=zh" : "/portal"}>
-            <Image src="/brand/wordmark-white.png" alt="R&Y Capital" width={346} height={109} />
+            <Image src={wordmarkWhite} alt="R&Y Capital" priority />
             <span>{t.back}</span>
           </Link>
           <button className="research-drawer-close" type="button" onClick={() => setDrawerOpen(false)} aria-label={t.close}>×</button>
@@ -331,37 +333,12 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
             <p>R&amp;Y Private Portal</p>
             <h1>{t.title}</h1>
           </div>
-          <div className="research-header-controls">
-            <div className="research-mode-switch" role="group" aria-label={zh ? "研究模式" : "Research mode"}>
-              <button
-                type="button"
-                className={mode === "luna" ? "active" : ""}
-                onClick={() => setMode("luna")}
-                aria-pressed={mode === "luna"}
-                disabled={generating}
-              >
-                <strong>{t.luna}</strong>
-                <small>{t.lunaDescription}</small>
-              </button>
-              <button
-                type="button"
-                className={mode === "terra" ? "active" : ""}
-                onClick={() => setMode("terra")}
-                aria-pressed={mode === "terra"}
-                disabled={generating}
-              >
-                <strong>{t.terra}</strong>
-                <small>{t.terraDescription}</small>
-              </button>
-            </div>
-            <span>{t.ready}</span>
-          </div>
         </header>
 
         <div className="research-chat" ref={chatRef} onScroll={handleScroll} aria-live="polite">
           {messages.length === 0 ? (
             <div className="research-empty">
-              <Image src="/brand/monogram-slate.png" alt="" width={495} height={411} />
+              <Image src={monogramSlate} alt="" priority />
               <p className="access-eyebrow">Private research workspace</p>
               <h2>{t.title}</h2>
               <p>{t.subtitle}</p>
@@ -403,6 +380,31 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
         </div>
 
         <div className="research-composer-wrap">
+          <div className="research-composer-toolbar">
+            <div className="research-mode-switch" role="group" aria-label={zh ? "研究模式" : "Research mode"}>
+              <button
+                type="button"
+                className={mode === "luna" ? "active" : ""}
+                onClick={() => setMode("luna")}
+                aria-pressed={mode === "luna"}
+                disabled={generating}
+              >
+                <strong>{t.luna}</strong>
+                <small>{t.lunaDescription}</small>
+              </button>
+              <button
+                type="button"
+                className={mode === "terra" ? "active" : ""}
+                onClick={() => setMode("terra")}
+                aria-pressed={mode === "terra"}
+                disabled={generating}
+              >
+                <strong>{t.terra}</strong>
+                <small>{t.terraDescription}</small>
+              </button>
+            </div>
+            <span>{t.ready}</span>
+          </div>
           {error && <p className="research-error" role="alert">{error}</p>}
           <form className="research-composer" onSubmit={(event) => void sendMessage(event)}>
             <textarea
