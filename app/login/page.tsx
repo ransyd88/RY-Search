@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitch, type SiteLanguage } from "@/components/LanguageSwitch";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { readServerEnv } from "@/lib/server-env";
 import { LoginForm } from "./LoginForm";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function LoginPage({
   searchParams: Promise<{ loggedOut?: string; lang?: string }>;
 }) {
   const configured = isSupabaseConfigured();
+  const turnstileSiteKey = await readServerEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY") ?? "";
   const params = await searchParams;
   const language: SiteLanguage = params.lang === "zh" ? "zh" : "en";
   const zh = language === "zh";
@@ -66,7 +68,7 @@ export default async function LoginPage({
           </p>
         )}
 
-        <LoginForm configured={configured} language={language} />
+        <LoginForm configured={configured} language={language} turnstileSiteKey={turnstileSiteKey} />
 
         <p className="login-help">
           {zh

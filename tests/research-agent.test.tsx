@@ -6,7 +6,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getOpenAIConfig } from "../lib/research-agent/config";
+import { getOpenAIConfig, getResearchMode } from "../lib/research-agent/config";
 import { beginGeneration, endGeneration } from "../lib/research-agent/rate-limit";
 import { encodeSse, parseSseBuffer } from "../lib/research-agent/sse";
 import {
@@ -64,14 +64,29 @@ test("Markdown rendering escapes raw script HTML", () => {
   assert.match(html, /<strong>safe<\/strong>/i);
 });
 
-test("missing OpenAI variables produce no implicit model configuration", () => {
+test("OpenAI configuration requires a server-side API key", () => {
   const previousKey = process.env.OPENAI_API_KEY;
-  const previousModel = process.env.OPENAI_MODEL;
   delete process.env.OPENAI_API_KEY;
-  delete process.env.OPENAI_MODEL;
   assert.equal(getOpenAIConfig(), null);
   if (previousKey) process.env.OPENAI_API_KEY = previousKey;
-  if (previousModel) process.env.OPENAI_MODEL = previousModel;
+});
+
+test("research modes map only to fixed server-side models", () => {
+  assert.equal(getResearchMode("luna")?.model, "gpt-5.6-luna");
+  assert.equal(getResearchMode("terra")?.model, "gpt-5.6-terra");
+  assert.equal(getResearchMode("gpt-5.6-sol"), null);
+  assert.equal(getResearchMode({ model: "gpt-5.6-sol" }), null);
+});
+
+test("login requires server-side Turnstile verification before authentication", async () => {
+  const action = await readFile(path.join(root, "app/login/actions.ts"), "utf8");
+  const validator = await readFile(path.join(root, "lib/turnstile.ts"), "utf8");
+  assert.match(action, /verifyLoginTurnstile\(turnstileToken, remoteIp\)/);
+  assert.ok(action.indexOf("verifyLoginTurnstile") < action.indexOf("signInWithPassword"));
+  assert.match(validator, /challenges\.cloudflare\.com\/turnstile\/v0\/siteverify/);
+  assert.match(validator, /result\.action !== "login"/);
+  assert.match(validator, /result\.hostname === expectedHostname/);
+  assert.match(validator, /TURNSTILE_SECRET_KEY/);
 });
 
 test("migration enforces ownership, RLS, chronological storage and atomic limits", async () => {
@@ -111,4 +126,5 @@ test("conversation endpoints scope ownership and implement CRUD contracts", asyn
   assert.match(chat, /status: aborted \? "aborted" : "failed"/);
   assert.match(chat, /adminSupabase[\s\S]*\.from\("ai_messages"\)[\s\S]*\.insert/);
   assert.doesNotMatch(chat, /payload\.(model|systemPrompt|instructions)/);
+  assert.match(chat, /getResearchMode\(payload\.mode\)/);
 });

@@ -6,7 +6,8 @@ const config = JSON.parse(await readFile(configPath, "utf8"));
 const publicRuntimeVariables = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-  "OPENAI_MODEL",
+  "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+  "TURNSTILE_EXPECTED_HOSTNAME",
 ];
 
 config.vars ??= {};

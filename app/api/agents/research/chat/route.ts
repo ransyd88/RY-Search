@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireResearchUser } from "@/lib/research-agent/auth";
 import {
   getOpenAIConfigForRequest,
+  getResearchMode,
   getResearchAgentLimits,
   RESEARCH_AGENT_ID,
   RESEARCH_AGENT_INSTRUCTIONS,
@@ -37,9 +38,11 @@ export async function POST(request: Request) {
   const agent = validateAgentId(payload.agentId);
   const conversationId = validateConversationId(payload.conversationId);
   const message = validateMessage(payload.message, limits.maxMessageLength);
+  const researchMode = getResearchMode(payload.mode);
   if (!agent.ok) return apiError(400, "INVALID_REQUEST", agent.error);
   if (!conversationId.ok) return apiError(400, "INVALID_REQUEST", conversationId.error);
   if (!message.ok) return apiError(400, "INVALID_REQUEST", message.error);
+  if (!researchMode) return apiError(400, "INVALID_REQUEST", "Invalid research mode.");
 
   const { data: conversation, error: conversationError } = await auth.supabase
     .from("ai_conversations")
@@ -159,7 +162,8 @@ export async function POST(request: Request) {
         })));
 
         const responseStream = await openai.responses.create({
-          model: openAIConfig.model,
+          model: researchMode.model,
+          reasoning: { effort: researchMode.reasoningEffort },
           instructions: RESEARCH_AGENT_INSTRUCTIONS,
           input,
           max_output_tokens: limits.maxOutputTokens,
@@ -185,7 +189,7 @@ export async function POST(request: Request) {
                 content: cleanText,
                 input_tokens: usageInfo?.input_tokens ?? null,
                 output_tokens: usageInfo?.output_tokens ?? null,
-                model: openAIConfig.model,
+                model: researchMode.model,
                 status: "completed",
               })
               .select("id,created_at")
@@ -220,7 +224,7 @@ export async function POST(request: Request) {
             user_id: auth.user.id,
             role: "assistant",
             content: "",
-            model: openAIConfig.model,
+            model: researchMode.model,
             status: aborted ? "aborted" : "failed",
             error_code: aborted ? "generation_aborted" : "upstream_error",
           });

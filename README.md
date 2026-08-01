@@ -59,9 +59,9 @@ secrets and server variables configured in Cloudflare are preserved when a Git
 branch is rebuilt or promoted.
 
 The `postbuild` step also copies the non-secret `NEXT_PUBLIC_SUPABASE_URL`,
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `OPENAI_MODEL` build variables into
-the generated Worker runtime configuration. Secret values are never copied into
-the generated configuration.
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, and
+`TURNSTILE_EXPECTED_HOSTNAME` build variables into the generated Worker runtime
+configuration. Secret values are never copied into the generated configuration.
 
 The build creates `dist/server/wrangler.json`; the deploy script publishes that
 server bundle and its client assets. Add the Supabase variables described below
@@ -169,8 +169,10 @@ Copy-Item .env.example .env.local
 
 ```dotenv
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=your_responses_api_model
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+TURNSTILE_EXPECTED_HOSTNAME=rycapital.com.au
 AI_DAILY_MESSAGE_LIMIT=100
 AI_MAX_OUTPUT_TOKENS=2000
 AI_CONTEXT_MESSAGE_LIMIT=20
@@ -179,7 +181,10 @@ AI_PER_MINUTE_LIMIT=10
 AI_UPSTREAM_TIMEOUT_MS=90000
 ```
 
-`OPENAI_MODEL` is deliberately required and has no silent code default. Choose a model documented as supporting the Responses API and streaming in your OpenAI project. The browser cannot choose the model, replace the system instructions, or enable tools.
+The UI exposes only two server-defined research modes: `LUNA` uses `gpt-5.6-luna`
+with medium reasoning, while `TERRA` uses `gpt-5.6-terra` with high reasoning.
+The default is `LUNA`. The browser submits only the fixed mode identifier and
+cannot select an arbitrary model, replace system instructions, or enable tools.
 
 ### 2. Apply the Supabase migration
 
@@ -199,16 +204,29 @@ RLS is a second line of defence; every server query also scopes ownership to the
 
 ### 3. Configure Cloudflare
 
-Keep the existing Supabase variables. Add `OPENAI_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as Worker secrets, never as plain public text. For the current Wrangler deployment flow, run from Windows PowerShell only when you are ready to configure production:
+Keep the existing Supabase variables. Add `OPENAI_API_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, and `TURNSTILE_SECRET_KEY` as Worker secrets, never
+as plain public text. For the current Wrangler deployment flow, run from Windows
+PowerShell only when you are ready to configure production:
 
 ```powershell
 npx.cmd wrangler secret put OPENAI_API_KEY --config dist/server/wrangler.json
 npx.cmd wrangler secret put SUPABASE_SERVICE_ROLE_KEY --config dist/server/wrangler.json
+npx.cmd wrangler secret put TURNSTILE_SECRET_KEY --config dist/server/wrangler.json
 ```
 
-Enter each key only into Wrangler's secure prompt. Alternatively, in Cloudflare go to **Workers & Pages > ry-capital-website > Settings > Variables and Secrets > Add**, choose **Secret**, add `OPENAI_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` separately, save them, and deploy a new version.
+Enter each key only into Wrangler's secure prompt. Alternatively, in Cloudflare
+go to **Workers & Pages > ry-capital-website > Settings > Variables and Secrets >
+Add**, choose **Secret**, add the three secrets separately, save them, and deploy
+a new version.
 
-Add `OPENAI_MODEL` as an encrypted secret or server-side runtime variable in the same screen. Add the optional `AI_*` limits there if you want values different from the defaults. Do not remove or overwrite the existing Supabase values. Never use `NEXT_PUBLIC_OPENAI_API_KEY` or `VITE_OPENAI_API_KEY`.
+Create a Turnstile widget for `rycapital.com.au`, then add its public site key as
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` and add `TURNSTILE_EXPECTED_HOSTNAME` with the
+value `rycapital.com.au`. Add these two non-secret values to both the Worker
+runtime variables and the Cloudflare build variables. Add optional `AI_*` limits
+only when values different from the defaults are required. Do not remove or
+overwrite existing Supabase values. Never use `NEXT_PUBLIC_OPENAI_API_KEY` or
+`VITE_OPENAI_API_KEY`.
 
 ### 4. Local verification
 

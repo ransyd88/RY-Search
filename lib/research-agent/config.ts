@@ -2,6 +2,25 @@ import { readServerEnv } from "@/lib/server-env";
 
 export const RESEARCH_AGENT_ID = "research" as const;
 
+export const RESEARCH_MODES = {
+  luna: {
+    label: "LUNA",
+    model: "gpt-5.6-luna",
+    reasoningEffort: "medium",
+  },
+  terra: {
+    label: "TERRA",
+    model: "gpt-5.6-terra",
+    reasoningEffort: "high",
+  },
+} as const;
+
+export type ResearchMode = keyof typeof RESEARCH_MODES;
+
+export function getResearchMode(value: unknown) {
+  return value === "terra" ? RESEARCH_MODES.terra : value === "luna" ? RESEARCH_MODES.luna : null;
+}
+
 export const RESEARCH_AGENT_INSTRUCTIONS = `You are the R&Y Research Agent, an internal research assistant for R&Y Capital, a privately held family investment company based in Sydney.
 
 Your purpose is to help authorised internal users organise information, analyse questions, compare options and prepare research across property, public markets, private credit and private enterprise.
@@ -46,12 +65,10 @@ export function getResearchAgentLimits() {
 
 export function getOpenAIConfig() {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
-  const model = process.env.OPENAI_MODEL?.trim();
-  return apiKey && model ? { apiKey, model } : null;
+  return apiKey ? { apiKey } : null;
 }
 
 export async function getOpenAIConfigForRequest() {
   const apiKey = await readServerEnv("OPENAI_API_KEY");
-  const model = await readServerEnv("OPENAI_MODEL");
-  return apiKey && model ? { apiKey, model } : null;
+  return apiKey ? { apiKey } : null;
 }

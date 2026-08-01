@@ -29,13 +29,6 @@ type ChatMessage = {
 
 type ApiFailure = { error?: { code?: string; message?: string } };
 
-const suggestions = [
-  "Review an investment opportunity",
-  "Compare two companies",
-  "Structure a property research brief",
-  "Summarise a private credit proposal",
-];
-
 const content = {
   en: {
     back: "Private Portal",
@@ -55,6 +48,10 @@ const content = {
     remove: "Delete",
     menu: "Open conversations",
     close: "Close conversations",
+    luna: "LUNA",
+    lunaDescription: "Standard research",
+    terra: "TERRA",
+    terraDescription: "Deep analysis",
   },
   zh: {
     back: "私人门户",
@@ -74,6 +71,10 @@ const content = {
     remove: "删除",
     menu: "打开对话记录",
     close: "关闭对话记录",
+    luna: "LUNA",
+    lunaDescription: "标准研究",
+    terra: "TERRA",
+    terraDescription: "深度分析",
   },
 } as const;
 
@@ -105,6 +106,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
+  const [mode, setMode] = useState<"luna" | "terra">("luna");
   const abortRef = useRef<AbortController | null>(null);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const followStreamRef = useRef(true);
@@ -209,7 +211,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
       const response = await fetch("/api/agents/research/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId, agentId: "research", message: text }),
+        body: JSON.stringify({ conversationId, agentId: "research", message: text, mode }),
         signal: abortController.signal,
       });
       if (!response.ok) {
@@ -329,7 +331,31 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
             <p>R&amp;Y Private Portal</p>
             <h1>{t.title}</h1>
           </div>
-          <span>{t.ready}</span>
+          <div className="research-header-controls">
+            <div className="research-mode-switch" role="group" aria-label={zh ? "研究模式" : "Research mode"}>
+              <button
+                type="button"
+                className={mode === "luna" ? "active" : ""}
+                onClick={() => setMode("luna")}
+                aria-pressed={mode === "luna"}
+                disabled={generating}
+              >
+                <strong>{t.luna}</strong>
+                <small>{t.lunaDescription}</small>
+              </button>
+              <button
+                type="button"
+                className={mode === "terra" ? "active" : ""}
+                onClick={() => setMode("terra")}
+                aria-pressed={mode === "terra"}
+                disabled={generating}
+              >
+                <strong>{t.terra}</strong>
+                <small>{t.terraDescription}</small>
+              </button>
+            </div>
+            <span>{t.ready}</span>
+          </div>
         </header>
 
         <div className="research-chat" ref={chatRef} onScroll={handleScroll} aria-live="polite">
@@ -339,11 +365,6 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
               <p className="access-eyebrow">Private research workspace</p>
               <h2>{t.title}</h2>
               <p>{t.subtitle}</p>
-              <div className="research-suggestions">
-                {suggestions.map((suggestion) => (
-                  <button type="button" key={suggestion} onClick={() => setDraft(suggestion)}>{suggestion}<span>↗</span></button>
-                ))}
-              </div>
             </div>
           ) : (
             <div className="research-messages">
