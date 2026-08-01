@@ -54,6 +54,10 @@ Build command: npm run build
 Deploy command: npm run deploy:cloudflare
 ```
 
+The deployment script uses Wrangler's `--keep-vars` flag so encrypted runtime
+secrets and server variables configured in Cloudflare are preserved when a Git
+branch is rebuilt or promoted.
+
 The build creates `dist/server/wrangler.json`; the deploy script publishes that
 server bundle and its client assets. Add the Supabase variables described below
 to both the Cloudflare build environment and the Worker runtime environment

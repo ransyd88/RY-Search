@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build",
-    "deploy:cloudflare": "wrangler deploy --config dist/server/wrangler.json",
+    "deploy:cloudflare": "wrangler deploy --keep-vars --config dist/server/wrangler.json",
     "start": "vinext start",
     "test": "node scripts/run-tests.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
