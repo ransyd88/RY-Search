@@ -40,7 +40,30 @@ const worker = {
       }, allowedWidths);
     }
 
-    return handler.fetch(request, env, ctx);
+    const response = await handler.fetch(request, env, ctx);
+    const privateRoutePrefixes = [
+      "/login",
+      "/portal",
+      "/auth",
+      "/callback",
+      "/password-reset",
+      "/reset-password",
+      "/api/agents",
+    ];
+    const isPrivateRoute = privateRoutePrefixes.some(
+      (prefix) => url.pathname === prefix || url.pathname.startsWith(`${prefix}/`),
+    );
+
+    if (!isPrivateRoute) return response;
+
+    const headers = new Headers(response.headers);
+    headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   },
 };
 

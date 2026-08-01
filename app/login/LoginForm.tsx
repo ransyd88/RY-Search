@@ -1,24 +1,31 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useCallback, useState } from "react";
 import type { SiteLanguage } from "@/components/LanguageSwitch";
 import { login, type LoginState } from "./actions";
+import { TurnstileWidget } from "./TurnstileWidget";
 
-const initialState: LoginState = { error: null };
+const initialState: LoginState = { error: null, attempt: 0 };
 
 export function LoginForm({
   configured,
   language,
+  turnstileSiteKey,
 }: {
   configured: boolean;
   language: SiteLanguage;
+  turnstileSiteKey: string;
 }) {
   const [state, formAction, pending] = useActionState(login, initialState);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const setToken = useCallback((token: string) => setTurnstileToken(token), []);
   const zh = language === "zh";
+  const ready = configured && Boolean(turnstileSiteKey);
 
   return (
     <form className="login-form" action={formAction}>
       <input type="hidden" name="language" value={language} />
+      <input type="hidden" name="cf-turnstile-response" value={turnstileToken} />
       <label>
         <span>{zh ? "邮箱地址" : "Email address"}</span>
         <input
@@ -27,7 +34,7 @@ export function LoginForm({
           autoComplete="email"
           inputMode="email"
           required
-          disabled={!configured || pending}
+          disabled={!ready || pending}
         />
       </label>
 
@@ -38,19 +45,29 @@ export function LoginForm({
           name="password"
           autoComplete="current-password"
           required
-          disabled={!configured || pending}
+          disabled={!ready || pending}
         />
       </label>
 
+      {turnstileSiteKey && (
+        <TurnstileWidget
+          attempt={state.attempt}
+          disabled={pending}
+          language={language}
+          onToken={setToken}
+          siteKey={turnstileSiteKey}
+        />
+      )}
+
       <div className="login-form-status" aria-live="polite">
-        {!configured
+        {!ready
           ? zh
-            ? "完成 Supabase 配置后才能登录。"
-            : "Supabase configuration is required before sign-in is available."
+            ? "完成 Supabase 与安全验证配置后才能登录。"
+            : "Supabase and security verification must be configured before sign-in is available."
           : state.error}
       </div>
 
-      <button type="submit" disabled={!configured || pending}>
+      <button type="submit" disabled={!ready || !turnstileToken || pending}>
         <span>
           {pending
             ? zh

@@ -54,6 +54,15 @@ Build command: npm run build
 Deploy command: npm run deploy:cloudflare
 ```
 
+The deployment script uses Wrangler's `--keep-vars` flag so encrypted runtime
+secrets and server variables configured in Cloudflare are preserved when a Git
+branch is rebuilt or promoted.
+
+The `postbuild` step also copies the non-secret `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, and
+`TURNSTILE_EXPECTED_HOSTNAME` build variables into the generated Worker runtime
+configuration. Secret values are never copied into the generated configuration.
+
 The build creates `dist/server/wrangler.json`; the deploy script publishes that
 server bundle and its client assets. Add the Supabase variables described below
 to both the Cloudflare build environment and the Worker runtime environment
@@ -109,7 +118,7 @@ For a project that only has a legacy anon key, leave the publishable-key line em
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_legacy_anon_key
 ```
 
-Never add a Supabase `service_role` or secret key to this website. The publishable/anon key is intentionally usable by the browser; database protection must come from Supabase Row Level Security.
+Never add a Supabase `service_role` key to browser code or a public-prefixed variable. The publishable/anon key is intentionally usable by the browser; database protection comes from Row Level Security. The Research Agent additionally uses `SUPABASE_SERVICE_ROLE_KEY` only as a server-side Cloudflare secret for trusted usage-counter RPCs.
 
 ### Invitation-only configuration
 
@@ -141,11 +150,117 @@ Or use `NEXT_PUBLIC_SUPABASE_ANON_KEY` only for a legacy project.
 
 Do not deploy the portal as static HTML. Use the existing Sites/Cloudflare Worker deployment output.
 
+## R&Y Research Agent Setup
+
+The first portal card opens `/portal/agents/research`. It provides authenticated, user-isolated conversations, real Responses API streaming, Supabase-backed history, safe Markdown rendering, daily/per-minute limits, and secure logout. It does not include live web access, file upload, private-document retrieval, long-term memory, shared company knowledge, financial actions, email actions, or autonomous tool loops.
+
+### 1. OpenAI project and key
+
+1. Create a dedicated API project in the OpenAI Platform and add API billing.
+2. Create a restricted project API key for this application. Give it only the API permissions the Responses endpoint requires.
+3. Never paste the key into chat, GitHub, screenshots, client-side code, or a public environment variable.
+4. Copy `.env.example` to an ignored local file in Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+5. Set these server-only values in `.env.local`:
+
+```dotenv
+OPENAI_API_KEY=your_openai_api_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+TURNSTILE_EXPECTED_HOSTNAME=rycapital.com.au
+AI_DAILY_MESSAGE_LIMIT=100
+AI_MAX_OUTPUT_TOKENS=2000
+AI_CONTEXT_MESSAGE_LIMIT=20
+AI_MAX_MESSAGE_LENGTH=20000
+AI_PER_MINUTE_LIMIT=10
+AI_UPSTREAM_TIMEOUT_MS=90000
+```
+
+The UI exposes only two server-defined research modes: `LUNA` uses `gpt-5.6-luna`
+with medium reasoning, while `TERRA` uses `gpt-5.6-terra` with high reasoning.
+The default is `LUNA`. The browser submits only the fixed mode identifier and
+cannot select an arbitrary model, replace system instructions, or enable tools.
+
+### 2. Apply the Supabase migration
+
+Open **Supabase Dashboard > SQL Editor > New query**, paste the complete contents of `supabase/migrations/20260801000000_research_agent.sql`, and run it once. The migration creates `ai_conversations`, `ai_messages`, `ai_daily_usage`, ownership indexes and constraints, RLS policies, and atomic daily/per-minute usage RPCs.
+
+Then open **Database > Tables** and verify RLS is enabled on all three tables. Under **Authentication > Users**, retain individual accounts for every user; never share one login.
+
+Test isolation with two accounts:
+
+1. Sign in as User A, create a conversation, and note its UUID from the authenticated network request.
+2. Sign out and sign in as User B.
+3. Confirm User A's conversation does not appear.
+4. Request User A's conversation/messages URL while signed in as User B and confirm it returns `404`.
+5. Confirm User B cannot rename or delete User A's conversation.
+
+RLS is a second line of defence; every server query also scopes ownership to the verified `supabase.auth.getUser()` ID. The browser never supplies an authoritative `user_id`.
+
+### 3. Configure Cloudflare
+
+Keep the existing Supabase variables. Add `OPENAI_API_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, and `TURNSTILE_SECRET_KEY` as Worker secrets, never
+as plain public text. For the current Wrangler deployment flow, run from Windows
+PowerShell only when you are ready to configure production:
+
+```powershell
+npx.cmd wrangler secret put OPENAI_API_KEY --config dist/server/wrangler.json
+npx.cmd wrangler secret put SUPABASE_SERVICE_ROLE_KEY --config dist/server/wrangler.json
+npx.cmd wrangler secret put TURNSTILE_SECRET_KEY --config dist/server/wrangler.json
+```
+
+Enter each key only into Wrangler's secure prompt. Alternatively, in Cloudflare
+go to **Workers & Pages > ry-capital-website > Settings > Variables and Secrets >
+Add**, choose **Secret**, add the three secrets separately, save them, and deploy
+a new version.
+
+Create a Turnstile widget for `rycapital.com.au`, then add its public site key as
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` and add `TURNSTILE_EXPECTED_HOSTNAME` with the
+value `rycapital.com.au`. Add these two non-secret values to both the Worker
+runtime variables and the Cloudflare build variables. Add optional `AI_*` limits
+only when values different from the defaults are required. Do not remove or
+overwrite existing Supabase values. Never use `NEXT_PUBLIC_OPENAI_API_KEY` or
+`VITE_OPENAI_API_KEY`.
+
+### 4. Local verification
+
+After applying the migration and configuring an ignored `.env.local`:
+
+```powershell
+npm.cmd run build
+npm.cmd test
+```
+
+For an interactive local check, start the normal server only after the build succeeds. Verify login, logout, expired-session redirect, conversation create/rename/delete, progressively streamed text, stop generation, mobile drawer/composer, and the daily limit by temporarily setting `AI_DAILY_MESSAGE_LIMIT=1` locally.
+
+Automated tests use mocks and do not make paid OpenAI calls. Before production, repeat the two-user isolation test and inspect browser source/network data to confirm no OpenAI key, system prompt, raw provider response, or another user's content is present.
+
+### Security warning
+
+- Never expose `OPENAI_API_KEY` to frontend code.
+- Never use `NEXT_PUBLIC_OPENAI_API_KEY` or `VITE_OPENAI_API_KEY`.
+- Never commit `.env`, `.env.local`, or `.dev.vars`.
+- Never use the Supabase service role key in the browser.
+- Keep Row Level Security enabled and verify every user on the server.
+- Do not store confidential documents in `public/` or public Supabase Storage buckets.
+- Do not log complete private conversation content by default.
+
+### Future extensions
+
+Live web research should be added later as an explicit, server-controlled OpenAI tool with source display, domain controls, per-user authorisation, separate limits, and audit logging. It is intentionally unavailable in version one.
+
+Private documents should later use a private Supabase Storage bucket, storage RLS, authenticated server-side retrieval and processing, file validation, malware controls, and—only if justified—an access-controlled vector index. No upload control or public bucket is included now.
+
 ## Portal placeholders
 
-The initial portal cards are intentionally non-clickable. Their `href` values are `null` in `app/portal/page.tsx` under the `PLACEHOLDER_CONFIG` comment:
+The Research Agent card is connected. The remaining cards are intentionally non-clickable under the `PLACEHOLDER_CONFIG` comment in `app/portal/page.tsx`:
 
-- R&Y Research Agent
 - Property Review Agent
 - Private Credit Agent
 - Market Briefing Agent
