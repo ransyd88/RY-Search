@@ -288,7 +288,11 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
     <main className="research-page">
       <aside className={`research-sidebar${drawerOpen ? " open" : ""}`} aria-label={t.history}>
         <div className="research-sidebar-head">
-          <Link className="research-brand" href={zh ? "/portal?lang=zh" : "/portal"}>
+          <Link
+            className="research-brand"
+            href={zh ? "/?lang=zh" : "/"}
+            aria-label={zh ? "返回 R&Y Capital 主页" : "Return to R&Y Capital home"}
+          >
             <Image
               src="/brand/wordmark-white.png"
               alt="R&Y Capital"

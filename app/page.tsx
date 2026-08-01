@@ -11,7 +11,7 @@ const homeContent = {
   en: {
     nav: ["About", "Focus", "Principles", "Contact"],
     navigate: "Navigate",
-    privateAccess: "Private Access",
+    privateAccess: "Login",
     location: "Sydney, Australia",
     heroTitle: ["Built for the", "Long Term"],
     heroLead: "A privately held investment company based in Sydney.",
@@ -56,7 +56,7 @@ const homeContent = {
   zh: {
     nav: ["关于我们", "投资方向", "投资原则", "联系我们"],
     navigate: "导航",
-    privateAccess: "私人访问",
+    privateAccess: "登录",
     location: "澳大利亚 · 悉尼",
     heroTitle: ["立足长远", "恒久致远"],
     heroLead: "一家总部位于悉尼的私人投资公司。",
