@@ -8,8 +8,6 @@ import remarkGfm from "remark-gfm";
 import { LanguageSwitch, type SiteLanguage } from "@/components/LanguageSwitch";
 import { parseSseBuffer } from "@/lib/research-agent/sse";
 import { logout } from "@/app/portal/actions";
-import monogramSlate from "./assets/monogram-slate.png";
-import wordmarkWhite from "./assets/wordmark-white.png";
 
 type Conversation = {
   id: string;
@@ -291,7 +289,14 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
       <aside className={`research-sidebar${drawerOpen ? " open" : ""}`} aria-label={t.history}>
         <div className="research-sidebar-head">
           <Link className="research-brand" href={zh ? "/portal?lang=zh" : "/portal"}>
-            <Image src={wordmarkWhite} alt="R&Y Capital" priority />
+            <Image
+              src="/brand/wordmark-white.png"
+              alt="R&Y Capital"
+              width={1024}
+              height={320}
+              priority
+              unoptimized
+            />
             <span>{t.back}</span>
           </Link>
           <button className="research-drawer-close" type="button" onClick={() => setDrawerOpen(false)} aria-label={t.close}>×</button>
@@ -338,7 +343,14 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
         <div className="research-chat" ref={chatRef} onScroll={handleScroll} aria-live="polite">
           {messages.length === 0 ? (
             <div className="research-empty">
-              <Image src={monogramSlate} alt="" priority />
+              <Image
+                src="/brand/monogram-slate.png"
+                alt=""
+                width={1024}
+                height={1024}
+                priority
+                unoptimized
+              />
               <p className="access-eyebrow">Private research workspace</p>
               <h2>{t.title}</h2>
               <p>{t.subtitle}</p>
