@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LanguageSwitch, type SiteLanguage } from "@/components/LanguageSwitch";
@@ -10,7 +11,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "R&Y Private Portal",
   description: "Private tools and resources for authorised R&Y Capital users.",
-  robots: { index: false, follow: false },
+  robots: "noindex, nofollow, noarchive",
+  alternates: null,
+  openGraph: null,
+  twitter: null,
 };
 
 const portalContent = {
@@ -56,8 +60,8 @@ const portalContent = {
   },
 } as const;
 
-// PLACEHOLDER_CONFIG: replace null href values with approved internal routes or
-// external URLs when each private tool is ready.
+// PLACEHOLDER_CONFIG: only the Research Agent is connected in this MVP. Keep
+// the remaining cards non-interactive until each protected destination exists.
 export default async function PortalPage({
   searchParams,
 }: {
@@ -88,7 +92,13 @@ export default async function PortalPage({
     <main className="portal-page">
       <aside className="portal-sidebar">
         <Link className="portal-brand" href={zh ? "/?lang=zh" : "/"}>
-          <img className="portal-wordmark-image" src="/brand/wordmark-white.png" alt="R&Y Capital" />
+          <Image
+            className="portal-wordmark-image"
+            src="/brand/wordmark-white.png"
+            alt="R&Y Capital"
+            width={346}
+            height={109}
+          />
           <span>
             <small>{content.portalName}</small>
           </span>
@@ -123,7 +133,13 @@ export default async function PortalPage({
           href={zh ? "/?lang=zh" : "/"}
           aria-label={zh ? "返回 R&Y Capital" : "Return to R and Y Capital"}
         >
-          <img className="access-monogram-image" src="/brand/monogram-slate.png" alt="" />
+          <Image
+            className="access-monogram-image"
+            src="/brand/monogram-slate.png"
+            alt=""
+            width={495}
+            height={411}
+          />
         </Link>
         <LanguageSwitch
           language={language}
@@ -153,13 +169,8 @@ export default async function PortalPage({
         <div className="portal-divider" />
 
         <div className="portal-grid">
-          {content.cards.map((card, index) => (
-            <article
-              className="portal-card"
-              id={`section-${Math.min(index + 1, 4)}`}
-              key={card[1]}
-              style={{ "--card-delay": `${index * 70}ms` } as React.CSSProperties}
-            >
+          {content.cards.map((card, index) => {
+            const cardBody = <>
               <div className="portal-card-meta">
                 <span>0{index + 1}</span>
                 <p>{card[0]}</p>
@@ -167,11 +178,27 @@ export default async function PortalPage({
               <h2>{card[1]}</h2>
               <p>{card[2]}</p>
               <div className="portal-card-footer">
-                <span>{content.pending}</span>
+                <span>{index === 0 ? (zh ? "打开智能体" : "Open agent") : content.pending}</span>
                 <i aria-hidden="true">↗</i>
               </div>
-            </article>
-          ))}
+            </>;
+            const sharedProps = {
+              className: "portal-card",
+              id: `section-${Math.min(index + 1, 4)}`,
+              style: { "--card-delay": `${index * 70}ms` } as React.CSSProperties,
+            };
+            return index === 0 ? (
+              <Link
+                {...sharedProps}
+                href={zh ? "/portal/agents/research?lang=zh" : "/portal/agents/research"}
+                key={card[1]}
+              >
+                {cardBody}
+              </Link>
+            ) : (
+              <article {...sharedProps} key={card[1]}>{cardBody}</article>
+            );
+          })}
         </div>
 
         <footer className="portal-footer">

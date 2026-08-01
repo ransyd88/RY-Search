@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitch, type SiteLanguage } from "@/components/LanguageSwitch";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -9,7 +10,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Private Access | R&Y Capital",
   description: "Secure private access for authorised R&Y Capital users.",
-  robots: { index: false, follow: false },
+  robots: "noindex, nofollow, noarchive",
+  alternates: null,
+  openGraph: null,
+  twitter: null,
 };
 
 export default async function LoginPage({
@@ -30,7 +34,13 @@ export default async function LoginPage({
         href={zh ? "/?lang=zh" : "/"}
         aria-label={zh ? "返回 R&Y Capital" : "Return to R and Y Capital"}
       >
-        <img className="login-wordmark-image" src="/brand/wordmark-slate.png" alt="R&Y Capital" />
+        <Image
+          className="login-wordmark-image"
+          src="/brand/wordmark-slate.png"
+          alt="R&Y Capital"
+          width={346}
+          height={109}
+        />
       </Link>
       <div className="login-language">
         <LanguageSwitch

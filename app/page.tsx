@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import SydneyCapitalCanvas from "@/components/SydneyCapitalCanvas";
+import { organizationStructuredData } from "@/lib/site-config";
 
 type HomeLanguage = "en" | "zh";
 
@@ -113,11 +115,13 @@ function BrandMark({
   tone?: "slate" | "gold" | "white";
 }) {
   return (
-    <img
+    <Image
       className={`brand-mark-image ${compact ? "brand-mark-image--compact" : ""}`}
       src={`/brand/monogram-${tone}.png`}
       alt=""
       aria-hidden="true"
+      width={495}
+      height={411}
     />
   );
 }
@@ -130,10 +134,12 @@ function BrandWordmark({
   className?: string;
 }) {
   return (
-    <img
+    <Image
       className={`brand-wordmark-image ${className}`}
       src={`/brand/wordmark-${tone}.png`}
       alt="R&Y Capital"
+      width={346}
+      height={109}
     />
   );
 }
@@ -153,7 +159,7 @@ export default function Home() {
     const savedLanguage = window.localStorage.getItem("ry-language");
     const nextLanguage: HomeLanguage =
       requestedLanguage === "zh" || (!requestedLanguage && savedLanguage === "zh") ? "zh" : "en";
-    setLanguage(nextLanguage);
+    queueMicrotask(() => setLanguage(nextLanguage));
     document.documentElement.lang = nextLanguage === "zh" ? "zh-CN" : "en";
   }, []);
 
@@ -225,6 +231,12 @@ export default function Home() {
 
   return (
     <main className={language === "zh" ? "language-zh" : "language-en"}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationStructuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <header className={`site-header ${scrolled ? "site-header--scrolled" : ""}`}>
         <a className="nav-logo" href="#top" aria-label="R and Y Capital home">
           <BrandWordmark className="brand-wordmark-image--nav" />
@@ -317,13 +329,16 @@ export default function Home() {
 
         <div className="hero-visual">
           <div className="hero-image-wrap">
-            <img
+            <Image
               src="/images/hero-architecture.jpg"
               alt={
                 language === "zh"
                   ? "自然光下的现代石材与玻璃建筑"
                   : "Contemporary stone and glass architecture in natural light"
                 }
+              width={1800}
+              height={3198}
+              priority
             />
             <SydneyCapitalCanvas language={language} />
             <span className="image-caption">{content.imageCaption}</span>
@@ -343,7 +358,16 @@ export default function Home() {
       </section>
 
       <section id="about" className="about section-shell">
-        <img className="watermark" src="/brand/monogram-slate.png" alt="" aria-hidden="true" />
+        <Image
+          className="watermark"
+          src="/brand/monogram-slate.png"
+          alt=""
+          aria-hidden="true"
+          width={495}
+          height={411}
+          loading="lazy"
+          decoding="async"
+        />
         <div className="section-label" data-reveal>
           <span>01</span>
           <p>{content.aboutLabel}</p>
@@ -379,7 +403,14 @@ export default function Home() {
         <div className="focus-list">
           {content.focusItems.map((item, index) => (
             <article className="focus-row" key={item[0]} data-reveal>
-              <img src={focusImages[index]} alt="" loading="lazy" />
+              <Image
+                src={focusImages[index]}
+                alt=""
+                width={index === 0 || index === 3 ? 1800 : 1600}
+                height={index === 0 || index === 3 ? 3198 : 2400}
+                loading="lazy"
+                decoding="async"
+              />
               <div className="focus-overlay" />
               <div className="focus-inner section-shell">
                 <span className="focus-number">0{index + 1}</span>

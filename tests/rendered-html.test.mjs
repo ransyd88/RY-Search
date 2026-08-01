@@ -1,20 +1,15 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+const { default: worker } = await import(workerUrl.href);
 
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
+function request(pathname, headers = {}) {
   return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
+    new Request(`http://localhost${pathname}`, {
+      headers: { accept: "text/html", ...headers },
+      redirect: "manual",
     }),
     {
       ASSETS: {
@@ -28,64 +23,86 @@ async function render() {
   );
 }
 
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
+function matches(source, expression) {
+  return source.match(expression) ?? [];
+}
+
+test("homepage is server rendered with canonical SEO metadata", async () => {
+  const response = await request("/");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
+  assert.equal(matches(html, /<title>/gi).length, 1);
+  assert.equal(matches(html, /<meta\s+name="description"/gi).length, 1);
+  assert.equal(matches(html, /<h1\b/gi).length, 1);
+  assert.match(html, /<html[^>]+lang="en-AU"/i);
+  assert.match(html, /<title>R&amp;Y Capital \| Sydney Family Investment Company<\/title>/i);
   assert.match(
     html,
-    /Your first version will appear here automatically when it’s ready\./,
+    /R&amp;Y Capital is a privately held family investment company based in Sydney, focused on long-term value across property, public markets, private credit and private enterprise\./i,
   );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+  assert.match(html, /rel="canonical" href="https:\/\/rycapital\.com\.au\/"/i);
+  assert.match(html, /property="og:url" content="https:\/\/rycapital\.com\.au\/"/i);
+  assert.match(html, /property="og:site_name" content="R&amp;Y Capital"/i);
+  assert.match(html, /name="twitter:card" content="summary_large_image"/i);
+  assert.match(html, /https:\/\/rycapital\.com\.au\/brand\/og-social\.jpg/i);
+  assert.match(html, /type="application\/ld\+json"/i);
+  assert.match(html, /mailto:info@rycapital\.com\.au/i);
+  assert.match(html, /Sydney, Australia/i);
+  assert.match(html, /Built for the/i);
+  assert.match(html, /Private Capital\./i);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
-  ]);
+test("robots.txt allows public crawling and excludes private routes", async () => {
+  const response = await request("/robots.txt", { accept: "text/plain" });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /^text\/plain\b/i);
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+  const text = await response.text();
+  assert.match(text, /^User-Agent: \*/mi);
+  assert.match(text, /^Allow: \/$/mi);
+  assert.match(text, /^Disallow: \/login$/mi);
+  assert.match(text, /^Disallow: \/portal\/\*$/mi);
+  assert.match(text, /^Sitemap: https:\/\/rycapital\.com\.au\/sitemap\.xml$/mi);
+});
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
-  );
+test("sitemap.xml contains only the canonical public homepage", async () => {
+  const response = await request("/sitemap.xml", { accept: "application/xml" });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /xml/i);
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+  const xml = await response.text();
+  assert.match(xml, /<loc>https:\/\/rycapital\.com\.au\/<\/loc>/i);
+  assert.equal(matches(xml, /<url>/gi).length, 1);
+  assert.doesNotMatch(xml, /\/login|\/portal|\/auth|\/callback/i);
+});
 
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+test("private routes are noindex and the portal remains authentication protected", async () => {
+  const loginResponse = await request("/login");
+  assert.equal(loginResponse.status, 200);
+  assert.equal(loginResponse.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+
+  const loginHtml = await loginResponse.text();
+  assert.match(loginHtml, /name="robots" content="noindex, nofollow, noarchive"/i);
+  assert.doesNotMatch(loginHtml, /rel="canonical"/i);
+  assert.doesNotMatch(loginHtml, /property="og:/i);
+
+  const portalResponse = await request("/portal");
+  assert.ok([302, 303, 307, 308].includes(portalResponse.status));
+  assert.equal(portalResponse.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+  assert.match(portalResponse.headers.get("location") ?? "", /\/login$/i);
+});
+
+test("unknown public routes return a real 404", async () => {
+  const response = await request("/definitely-missing-seo-audit");
+  assert.equal(response.status, 404);
+});
+
+test("Research Agent APIs reject unauthenticated requests without exposing content", async () => {
+  const response = await request("/api/agents/research/conversations", { accept: "application/json" });
+  assert.equal(response.status, 401);
+  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+  const payload = await response.json();
+  assert.equal(payload.error.code, "UNAUTHENTICATED");
 });
