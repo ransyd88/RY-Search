@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { mkdir, readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { build } from "esbuild";
 
@@ -8,6 +8,7 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const vinextCli = path.join(projectRoot, "node_modules", "vinext", "dist", "cli.js");
 const renderedHtmlTest = path.join(projectRoot, "tests", "rendered-html.test.mjs");
 const bundledResearchAgentTest = path.join(projectRoot, "tmp", "tests", "research-agent.test.mjs");
+const cloudflareWorkersTestLoader = path.join(projectRoot, "scripts", "cloudflare-workers-test-loader.mjs");
 
 function runNode(args) {
   const result = spawnSync(process.execPath, args, {
@@ -39,6 +40,19 @@ await build({
   platform: "node",
   format: "esm",
   packages: "external",
+  plugins: [{
+    name: "cloudflare-workers-test-stub",
+    setup(buildContext) {
+      buildContext.onResolve({ filter: /^cloudflare:workers$/ }, () => ({
+        path: "cloudflare:workers",
+        namespace: "cloudflare-workers-test-stub",
+      }));
+      buildContext.onLoad({ filter: /.*/, namespace: "cloudflare-workers-test-stub" }, () => ({
+        contents: "export const env = {};",
+        loader: "js",
+      }));
+    },
+  }],
   sourcemap: false,
 });
-runNode(["--test", renderedHtmlTest, bundledResearchAgentTest]);
+runNode(["--experimental-loader", pathToFileURL(cloudflareWorkersTestLoader).href, "--test", renderedHtmlTest, bundledResearchAgentTest]);
