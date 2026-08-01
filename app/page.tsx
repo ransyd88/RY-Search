@@ -122,6 +122,7 @@ function BrandMark({
       aria-hidden="true"
       width={495}
       height={411}
+      unoptimized
     />
   );
 }
@@ -140,6 +141,7 @@ function BrandWordmark({
       alt="R&Y Capital"
       width={346}
       height={109}
+      unoptimized
     />
   );
 }
