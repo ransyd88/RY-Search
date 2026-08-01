@@ -73,6 +73,12 @@ export async function POST(request: Request) {
   });
   const usage = (usageData ?? {}) as UsageResult;
   if (usageError) {
+    console.error("Research Agent usage RPC failed", {
+      code: usageError.code,
+      message: usageError.message,
+      details: usageError.details,
+      hint: usageError.hint,
+    });
     endGeneration(auth.user.id);
     return apiError(503, "DATABASE_ERROR", "Usage controls are temporarily unavailable.");
   }
