@@ -58,6 +58,11 @@ The deployment script uses Wrangler's `--keep-vars` flag so encrypted runtime
 secrets and server variables configured in Cloudflare are preserved when a Git
 branch is rebuilt or promoted.
 
+The `postbuild` step also copies the non-secret `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `OPENAI_MODEL` build variables into
+the generated Worker runtime configuration. Secret values are never copied into
+the generated configuration.
+
 The build creates `dist/server/wrangler.json`; the deploy script publishes that
 server bundle and its client assets. Add the Supabase variables described below
 to both the Cloudflare build environment and the Worker runtime environment

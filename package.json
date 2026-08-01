@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build",
+    "postbuild": "node scripts/prepare-cloudflare-config.mjs",
     "deploy:cloudflare": "wrangler deploy --keep-vars --config dist/server/wrangler.json",
     "start": "vinext start",
     "test": "node scripts/run-tests.mjs",
