@@ -1,12 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
+import { readServerEnv } from "@/lib/server-env";
 
 /**
  * Server-only Supabase client for trusted usage-counter RPCs.
  * Never import this module from a Client Component.
  */
-export function createSupabaseAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+export async function createSupabaseAdminClient() {
+  const url = await readServerEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const serviceRoleKey = await readServerEnv("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !serviceRoleKey) return null;
 
   return createClient(url, serviceRoleKey, {

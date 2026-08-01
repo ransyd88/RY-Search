@@ -1,3 +1,5 @@
+import { readServerEnv } from "@/lib/server-env";
+
 export const RESEARCH_AGENT_ID = "research" as const;
 
 export const RESEARCH_AGENT_INSTRUCTIONS = `You are the R&Y Research Agent, an internal research assistant for R&Y Capital, a privately held family investment company based in Sydney.
@@ -45,5 +47,11 @@ export function getResearchAgentLimits() {
 export function getOpenAIConfig() {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   const model = process.env.OPENAI_MODEL?.trim();
+  return apiKey && model ? { apiKey, model } : null;
+}
+
+export async function getOpenAIConfigForRequest() {
+  const apiKey = await readServerEnv("OPENAI_API_KEY");
+  const model = await readServerEnv("OPENAI_MODEL");
   return apiKey && model ? { apiKey, model } : null;
 }

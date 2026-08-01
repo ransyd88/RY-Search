@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireResearchUser } from "@/lib/research-agent/auth";
 import {
-  getOpenAIConfig,
+  getOpenAIConfigForRequest,
   getResearchAgentLimits,
   RESEARCH_AGENT_ID,
   RESEARCH_AGENT_INSTRUCTIONS,
@@ -52,8 +52,8 @@ export async function POST(request: Request) {
   if (conversationError) return apiError(503, "DATABASE_ERROR", "Unable to verify this conversation.");
   if (!conversation) return apiError(404, "NOT_FOUND", "Conversation not found.");
 
-  const openAIConfig = getOpenAIConfig();
-  const adminSupabase = createSupabaseAdminClient();
+  const openAIConfig = await getOpenAIConfigForRequest();
+  const adminSupabase = await createSupabaseAdminClient();
   if (!openAIConfig || !adminSupabase) {
     return apiError(503, "CONFIGURATION_ERROR", "The Research Agent is not configured yet. Contact an administrator.");
   }
