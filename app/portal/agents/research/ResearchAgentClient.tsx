@@ -15,6 +15,8 @@ type Conversation = {
   agent_id: string;
   created_at: string;
   updated_at: string;
+  visibility: "shared" | "private";
+  can_manage: boolean;
 };
 
 type ChatMessage = {
@@ -25,6 +27,7 @@ type ChatMessage = {
   created_at: string;
   status: "completed" | "failed" | "aborted" | "streaming";
   error_code?: string | null;
+  is_mine?: boolean;
 };
 
 type ApiFailure = { error?: { code?: string; message?: string } };
@@ -52,6 +55,11 @@ const content = {
     lunaDescription: "Standard research",
     terra: "TERRA",
     terraDescription: "Deep analysis",
+    shared: "Shared",
+    private: "Private",
+    privateQuestion: "Private question",
+    privateHint: "Only you can see this new conversation",
+    colleague: "Team member",
   },
   zh: {
     back: "私人门户",
@@ -75,6 +83,11 @@ const content = {
     lunaDescription: "标准研究",
     terra: "TERRA",
     terraDescription: "深度分析",
+    shared: "共享",
+    private: "私密",
+    privateQuestion: "私密问题",
+    privateHint: "将自动建立仅您可见的新对话",
+    colleague: "团队成员",
   },
 } as const;
 
@@ -107,6 +120,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
   const [mode, setMode] = useState<"luna" | "terra">("luna");
+  const [privateNext, setPrivateNext] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const followStreamRef = useRef(true);
@@ -138,10 +152,10 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
     chatRef.current.scrollTo({ top: chatRef.current.scrollHeight, behavior: generating ? "auto" : "smooth" });
   }, [messages, generating]);
 
-  async function createConversation() {
+  async function createConversation(visibility: "shared" | "private" = "shared") {
     const result = await jsonRequest<{ conversation: Conversation }>("/api/agents/research/conversations", {
       method: "POST",
-      body: JSON.stringify({}),
+      body: JSON.stringify({ visibility }),
     });
     setConversations((items) => [result.conversation, ...items]);
     setMessages([]);
@@ -188,7 +202,12 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
 
     let conversationId = activeId;
     try {
-      if (!conversationId) conversationId = await createConversation();
+      if (privateNext) {
+        conversationId = await createConversation("private");
+        setPrivateNext(false);
+      } else if (!conversationId) {
+        conversationId = await createConversation("shared");
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to create a conversation.");
       return;
@@ -198,7 +217,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
     const optimisticAssistantId = `local-assistant-${Date.now()}`;
     const now = new Date().toISOString();
     setMessages((items) => [...items,
-      { id: optimisticUserId, conversation_id: conversationId, role: "user", content: text, created_at: now, status: "completed" },
+      { id: optimisticUserId, conversation_id: conversationId, role: "user", content: text, created_at: now, status: "completed", is_mine: true },
       { id: optimisticAssistantId, conversation_id: conversationId, role: "assistant", content: "", created_at: now, status: "streaming" },
     ]);
     setGenerating(true);
@@ -305,7 +324,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
           </Link>
           <button className="research-drawer-close" type="button" onClick={() => setDrawerOpen(false)} aria-label={t.close}>×</button>
         </div>
-        <button className="research-new" type="button" onClick={() => void createConversation().catch((reason: Error) => setError(reason.message))}>
+        <button className="research-new" type="button" onClick={() => void createConversation("shared").catch((reason: Error) => setError(reason.message))}>
           <span>＋</span>{t.newConversation}
         </button>
         <p className="research-history-label">{t.history}</p>
@@ -315,12 +334,17 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
             <div className={`research-history-row${activeId === conversation.id ? " active" : ""}`} key={conversation.id}>
               <button type="button" onClick={() => void loadMessages(conversation.id).catch((reason: Error) => setError(reason.message))}>
                 <span>{conversation.title}</span>
-                <small>{new Date(conversation.updated_at).toLocaleDateString(zh ? "zh-CN" : "en-AU", { day: "numeric", month: "short" })}</small>
+                <small>
+                  <span className={`research-visibility ${conversation.visibility}`}>{conversation.visibility === "private" ? `● ${t.private}` : t.shared}</span>
+                  {new Date(conversation.updated_at).toLocaleDateString(zh ? "zh-CN" : "en-AU", { day: "numeric", month: "short" })}
+                </small>
               </button>
-              <div>
-                <button type="button" onClick={() => void renameConversation(conversation)} aria-label={`${t.rename}: ${conversation.title}`}>✎</button>
-                <button type="button" onClick={() => void deleteConversation(conversation)} aria-label={`${t.remove}: ${conversation.title}`}>×</button>
-              </div>
+              {conversation.can_manage && (
+                <div>
+                  <button type="button" onClick={() => void renameConversation(conversation)} aria-label={`${t.rename}: ${conversation.title}`}>✎</button>
+                  <button type="button" onClick={() => void deleteConversation(conversation)} aria-label={`${t.remove}: ${conversation.title}`}>×</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -364,7 +388,7 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
               {messages.map((message) => (
                 <article className={`research-message ${message.role} ${message.status}`} key={message.id}>
                   <div className="research-message-meta">
-                    <span>{message.role === "assistant" ? "R&Y Research" : zh ? "您" : "You"}</span>
+                    <span>{message.role === "assistant" ? "R&Y Research" : message.is_mine === false ? t.colleague : zh ? "您" : "You"}</span>
                     <time>{new Date(message.created_at).toLocaleTimeString(zh ? "zh-CN" : "en-AU", { hour: "2-digit", minute: "2-digit" })}</time>
                   </div>
                   {message.role === "assistant" ? (
@@ -419,7 +443,20 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
                 <small>{t.terraDescription}</small>
               </button>
             </div>
-            <span>{t.ready}</span>
+            <div className="research-composer-options">
+              <button
+                type="button"
+                className={`research-private-toggle${privateNext ? " active" : ""}`}
+                aria-pressed={privateNext}
+                disabled={generating}
+                onClick={() => setPrivateNext((value) => !value)}
+                title={t.privateHint}
+              >
+                <span aria-hidden="true">{privateNext ? "●" : "○"}</span>
+                {t.privateQuestion}
+              </button>
+              <span>{privateNext ? t.privateHint : t.ready}</span>
+            </div>
           </div>
           {error && <p className="research-error" role="alert">{error}</p>}
           <form className="research-composer" onSubmit={(event) => void sendMessage(event)}>

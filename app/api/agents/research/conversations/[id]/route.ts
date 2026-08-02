@@ -25,12 +25,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     .eq("user_id", auth.user.id)
     .eq("agent_id", RESEARCH_AGENT_ID)
     .is("archived_at", null)
-    .select("id,title,agent_id,created_at,updated_at")
+    .select("id,title,agent_id,visibility,created_at,updated_at")
     .maybeSingle();
 
   if (error) return apiError(503, "DATABASE_ERROR", "Unable to rename this conversation.");
   if (!data) return apiError(404, "NOT_FOUND", "Conversation not found.");
-  return apiJson({ conversation: data });
+  return apiJson({ conversation: { ...data, can_manage: true } });
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {

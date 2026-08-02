@@ -24,6 +24,16 @@ export function validateConversationId(value: unknown): ValidationResult<string>
     : { ok: false, error: "Invalid conversation identifier." };
 }
 
+export type ConversationVisibility = "shared" | "private";
+
+export function validateConversationVisibility(value: unknown): ValidationResult<ConversationVisibility> {
+  return value === undefined || value === "shared"
+    ? { ok: true, value: "shared" }
+    : value === "private"
+      ? { ok: true, value: "private" }
+      : { ok: false, error: "Invalid conversation visibility." };
+}
+
 export function validateAgentId(value: unknown): ValidationResult<typeof RESEARCH_AGENT_ID> {
   return value === undefined || value === RESEARCH_AGENT_ID
     ? { ok: true, value: RESEARCH_AGENT_ID }

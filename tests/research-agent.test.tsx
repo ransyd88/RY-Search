@@ -12,6 +12,7 @@ import { encodeSse, parseSseBuffer } from "../lib/research-agent/sse";
 import {
   titleFromMessage,
   validateConversationId,
+  validateConversationVisibility,
   validateMessage,
   validateTitle,
 } from "../lib/research-agent/validation";
@@ -24,6 +25,10 @@ test("request validation rejects missing, oversized and invalid input", () => {
   assert.equal(validateMessage(" valid ", 100).ok, true);
   assert.equal(validateConversationId("not-a-uuid").ok, false);
   assert.equal(validateConversationId("037b3a90-e411-4b67-9c92-b2d958f58121").ok, true);
+  assert.equal(validateConversationVisibility(undefined).ok, true);
+  assert.equal(validateConversationVisibility("shared").ok, true);
+  assert.equal(validateConversationVisibility("private").ok, true);
+  assert.equal(validateConversationVisibility("public").ok, false);
   assert.equal(validateTitle("").ok, false);
   assert.equal(validateTitle("x".repeat(121)).ok, false);
 });
@@ -91,6 +96,7 @@ test("login requires server-side Turnstile verification before authentication", 
 
 test("migration enforces ownership, RLS, chronological storage and atomic limits", async () => {
   const sql = await readFile(path.join(root, "supabase/migrations/20260801000000_research_agent.sql"), "utf8");
+  const visibilitySql = await readFile(path.join(root, "supabase/migrations/20260802000000_shared_conversation_visibility.sql"), "utf8");
   for (const table of ["ai_conversations", "ai_messages", "ai_daily_usage"]) {
     assert.match(sql, new RegExp(`alter table public\\.${table} enable row level security`, "i"));
   }
@@ -108,9 +114,14 @@ test("migration enforces ownership, RLS, chronological storage and atomic limits
   assert.match(sql, /grant select on public\.ai_messages to authenticated/i);
   assert.doesNotMatch(sql, /grant select, insert on public\.ai_messages to authenticated/i);
   assert.match(sql, /ai_messages_conversation_created_idx/i);
+  assert.match(visibilitySql, /visibility in \('shared', 'private'\)/i);
+  assert.match(visibilitySql, /visibility = 'shared' or \(select auth\.uid\(\)\) = user_id/i);
+  assert.match(visibilitySql, /exists\s*\([\s\S]*ai_conversations[\s\S]*conversation\.user_id = \(select auth\.uid\(\)\)/i);
+  assert.doesNotMatch(visibilitySql, /using\s*\(\s*true\s*\)/i);
+  assert.match(visibilitySql, /revoke all on public\.ai_conversations, public\.ai_messages from anon/i);
 });
 
-test("conversation endpoints scope ownership and implement CRUD contracts", async () => {
+test("conversation endpoints enforce shared reads and owner-only private management", async () => {
   const collection = await readFile(path.join(root, "app/api/agents/research/conversations/route.ts"), "utf8");
   const item = await readFile(path.join(root, "app/api/agents/research/conversations/[id]/route.ts"), "utf8");
   const messages = await readFile(path.join(root, "app/api/agents/research/conversations/[id]/messages/route.ts"), "utf8");
@@ -118,7 +129,14 @@ test("conversation endpoints scope ownership and implement CRUD contracts", asyn
   assert.match(collection, /export async function POST/);
   assert.match(item, /export async function PATCH/);
   assert.match(item, /export async function DELETE/);
-  for (const source of [collection, item, messages, chat]) assert.match(source, /\.eq\("user_id", auth\.user\.id\)/);
+  assert.doesNotMatch(collection, /\.eq\("user_id", auth\.user\.id\)/);
+  assert.match(collection, /can_manage: user_id === auth\.user\.id/);
+  assert.match(collection, /validateConversationVisibility/);
+  assert.match(item, /\.eq\("user_id", auth\.user\.id\)/);
+  assert.match(messages, /conversation\.visibility === "private" && conversation\.user_id !== auth\.user\.id/);
+  assert.match(chat, /conversation\.visibility === "private" && conversation\.user_id !== auth\.user\.id/);
+  assert.doesNotMatch(messages, /\.eq\("conversation_id", id\.value\)[\s\S]{0,100}\.eq\("user_id", auth\.user\.id\)/);
+  assert.doesNotMatch(chat, /\.eq\("conversation_id", conversationId\.value\)[\s\S]{0,100}\.eq\("user_id", auth\.user\.id\)/);
   assert.match(messages, /order\("created_at", \{ ascending: true \}\)/);
   assert.match(chat, /apiError\(503, "CONFIGURATION_ERROR"/);
   assert.match(chat, /daily \? "DAILY_LIMIT" : active \? "GENERATION_ACTIVE" : "RATE_LIMIT"/);
