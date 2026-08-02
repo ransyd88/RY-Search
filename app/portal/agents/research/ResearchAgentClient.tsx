@@ -17,6 +17,7 @@ type Conversation = {
   updated_at: string;
   visibility: "shared" | "private";
   can_manage: boolean;
+  can_delete: boolean;
 };
 
 type ChatMessage = {
@@ -179,7 +180,14 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
   }
 
   async function deleteConversation(conversation: Conversation) {
-    if (!window.confirm(zh ? `删除“${conversation.title}”？` : `Delete “${conversation.title}”?`)) return;
+    const warning = conversation.visibility === "shared"
+      ? zh
+        ? `删除共享对话“${conversation.title}”？所有成员都将无法再查看。`
+        : `Delete shared conversation “${conversation.title}”? It will be removed for every member.`
+      : zh
+        ? `删除私人对话“${conversation.title}”？`
+        : `Delete private conversation “${conversation.title}”?`;
+    if (!window.confirm(warning)) return;
     try {
       await jsonRequest(`/api/agents/research/conversations/${conversation.id}`, { method: "DELETE" });
       const remaining = conversations.filter((item) => item.id !== conversation.id);
@@ -339,10 +347,14 @@ export function ResearchAgentClient({ email, language }: { email: string; langua
                   {new Date(conversation.updated_at).toLocaleDateString(zh ? "zh-CN" : "en-AU", { day: "numeric", month: "short" })}
                 </small>
               </button>
-              {conversation.can_manage && (
+              {(conversation.can_manage || conversation.can_delete) && (
                 <div>
-                  <button type="button" onClick={() => void renameConversation(conversation)} aria-label={`${t.rename}: ${conversation.title}`}>✎</button>
-                  <button type="button" onClick={() => void deleteConversation(conversation)} aria-label={`${t.remove}: ${conversation.title}`}>×</button>
+                  {conversation.can_manage && (
+                    <button type="button" onClick={() => void renameConversation(conversation)} aria-label={`${t.rename}: ${conversation.title}`}>✎</button>
+                  )}
+                  {conversation.can_delete && (
+                    <button type="button" onClick={() => void deleteConversation(conversation)} aria-label={`${t.remove}: ${conversation.title}`}>×</button>
+                  )}
                 </div>
               )}
             </div>

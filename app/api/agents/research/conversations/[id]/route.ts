@@ -2,6 +2,7 @@ import { requireResearchUser } from "@/lib/research-agent/auth";
 import { RESEARCH_AGENT_ID } from "@/lib/research-agent/config";
 import { apiError, apiJson, parseJsonBody } from "@/lib/research-agent/http";
 import { validateConversationId, validateTitle } from "@/lib/research-agent/validation";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (error) return apiError(503, "DATABASE_ERROR", "Unable to rename this conversation.");
   if (!data) return apiError(404, "NOT_FOUND", "Conversation not found.");
-  return apiJson({ conversation: { ...data, can_manage: true } });
+  return apiJson({ conversation: { ...data, can_manage: true, can_delete: true } });
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
@@ -39,11 +40,29 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const id = validateConversationId((await context.params).id);
   if (!id.ok) return apiError(400, "INVALID_REQUEST", id.error);
 
-  const { data, error } = await auth.supabase
+  const { data: conversation, error: readError } = await auth.supabase
+    .from("ai_conversations")
+    .select("id,user_id,visibility")
+    .eq("id", id.value)
+    .eq("agent_id", RESEARCH_AGENT_ID)
+    .is("archived_at", null)
+    .maybeSingle();
+
+  if (readError) return apiError(503, "DATABASE_ERROR", "Unable to verify this conversation.");
+  if (!conversation) return apiError(404, "NOT_FOUND", "Conversation not found.");
+  if (conversation.visibility === "private" && conversation.user_id !== auth.user.id) {
+    return apiError(404, "NOT_FOUND", "Conversation not found.");
+  }
+
+  const adminSupabase = await createSupabaseAdminClient();
+  if (!adminSupabase) {
+    return apiError(503, "CONFIGURATION_ERROR", "Conversation management is temporarily unavailable.");
+  }
+
+  const { data, error } = await adminSupabase
     .from("ai_conversations")
     .delete()
-    .eq("id", id.value)
-    .eq("user_id", auth.user.id)
+    .eq("id", conversation.id)
     .eq("agent_id", RESEARCH_AGENT_ID)
     .select("id")
     .maybeSingle();
