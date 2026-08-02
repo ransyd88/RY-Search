@@ -2714,12 +2714,12 @@ textarea {
   text-align: left;
 }
 
-.research-history-row > button span,
-.research-history-row > button small {
+.research-history-row > button > span,
+.research-history-row > button > small {
   display: block;
 }
 
-.research-history-row > button span {
+.research-history-row > button > span {
   font-family: var(--serif);
   font-size: 15px;
   overflow: hidden;
@@ -2727,12 +2727,21 @@ textarea {
   white-space: nowrap;
 }
 
-.research-history-row > button small {
+.research-history-row > button > small {
   color: rgba(251, 250, 247, 0.35);
   font-size: 9px;
   letter-spacing: 0.08em;
   margin-top: 4px;
   text-transform: uppercase;
+}
+
+.research-visibility {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.research-visibility.private {
+  color: var(--champagne-light);
 }
 
 .research-history-row > div {
@@ -3064,13 +3073,41 @@ textarea {
   max-width: 820px;
 }
 
-.research-composer-toolbar > span {
+.research-composer-options {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.research-composer-options > span {
   color: var(--blue-grey);
   font-size: 11px;
   letter-spacing: 0.08em;
   line-height: 1.5;
   max-width: 240px;
   text-align: right;
+}
+
+.research-private-toggle {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--champagne-light);
+  color: var(--deep-slate);
+  display: inline-flex;
+  font-size: 10px;
+  gap: 7px;
+  letter-spacing: 0.1em;
+  padding: 8px 11px;
+  text-transform: uppercase;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.research-private-toggle span { color: var(--champagne); }
+
+.research-private-toggle.active {
+  background: var(--deep-slate);
+  color: var(--soft-ivory);
 }
 
 .research-error {
@@ -3197,7 +3234,8 @@ textarea {
   .research-message.user { margin-left: 20px; }
   .research-composer-wrap { padding: 10px 14px max(12px, env(safe-area-inset-bottom)); }
   .research-composer-toolbar { align-items: stretch; flex-direction: column; gap: 7px; }
-  .research-composer-toolbar > span { max-width: none; text-align: left; }
+  .research-composer-options { align-items: flex-start; }
+  .research-composer-options > span { max-width: none; text-align: left; }
   .research-composer { gap: 8px; padding: 10px 10px 10px 14px; }
   .research-composer textarea { font-size: 18px; min-height: 44px; }
   .research-composer > button { min-width: 72px; padding: 13px 10px; }

@@ -152,7 +152,7 @@ Do not deploy the portal as static HTML. Use the existing Sites/Cloudflare Worke
 
 ## R&Y Research Agent Setup
 
-The first portal card opens `/portal/agents/research`. It provides authenticated, user-isolated conversations, real Responses API streaming, Supabase-backed history, safe Markdown rendering, daily/per-minute limits, and secure logout. It does not include live web access, file upload, private-document retrieval, long-term memory, shared company knowledge, financial actions, email actions, or autonomous tool loops.
+The first portal card opens `/portal/agents/research`. It provides an authenticated shared research workspace, optional owner-only private conversations, real Responses API streaming, Supabase-backed history, safe Markdown rendering, daily/per-minute limits, and secure logout. It does not include live web access, file upload, private-document retrieval, shared document knowledge, financial actions, email actions, or autonomous tool loops.
 
 ### 1. OpenAI project and key
 
@@ -175,7 +175,7 @@ TURNSTILE_SECRET_KEY=your_turnstile_secret_key
 TURNSTILE_EXPECTED_HOSTNAME=rycapital.com.au
 AI_DAILY_MESSAGE_LIMIT=100
 AI_MAX_OUTPUT_TOKENS=2000
-AI_CONVERSATION_MEMORY_ENABLED=false
+AI_CONVERSATION_MEMORY_ENABLED=true
 AI_CONTEXT_MESSAGE_LIMIT=20
 AI_MAX_MESSAGE_LENGTH=20000
 AI_PER_MINUTE_LIMIT=10
@@ -187,28 +187,30 @@ with medium reasoning, while `TERRA` uses `gpt-5.6-terra` with high reasoning.
 The default is `LUNA`. The browser submits only the fixed mode identifier and
 cannot select an arbitrary model, replace system instructions, or enable tools.
 
-Conversation memory is temporarily disabled by default. With
-`AI_CONVERSATION_MEMORY_ENABLED=false`, each AI request receives only the
-current user message; saved conversation history remains visible to its owner
-but is not sent back to the model as context. Account isolation remains active
-at every layer. Set this server-only variable to `true` later to restore
-same-conversation context using `AI_CONTEXT_MESSAGE_LIMIT`.
+Conversation memory is enabled by default. Shared conversations and their
+same-conversation context are visible to every authenticated, administrator-created
+portal account. Selecting **Private question** creates a separate private
+conversation; only its creator can read it or include it in AI context. Shared
+conversation creators retain exclusive rename/delete rights. Set
+`AI_CONVERSATION_MEMORY_ENABLED=false` only as an emergency switch to stop all
+cross-turn context while leaving saved history intact.
 
 ### 2. Apply the Supabase migration
 
-Open **Supabase Dashboard > SQL Editor > New query**, paste the complete contents of `supabase/migrations/20260801000000_research_agent.sql`, and run it once. The migration creates `ai_conversations`, `ai_messages`, `ai_daily_usage`, ownership indexes and constraints, RLS policies, and atomic daily/per-minute usage RPCs.
+For a new project, open **Supabase Dashboard > SQL Editor > New query**, paste and run `supabase/migrations/20260801000000_research_agent.sql`, then paste and run `supabase/migrations/20260802000000_shared_conversation_visibility.sql`. For the existing R&Y project, run only the second migration. It adds shared/private visibility and replaces the read policies without weakening owner-only management or anonymous-user denial.
 
 Then open **Database > Tables** and verify RLS is enabled on all three tables. Under **Authentication > Users**, retain individual accounts for every user; never share one login.
 
-Test isolation with two accounts:
+Test shared/private behaviour with two accounts:
 
-1. Sign in as User A, create a conversation, and note its UUID from the authenticated network request.
+1. Sign in as User A, create a normal conversation, send a message, and note its title.
 2. Sign out and sign in as User B.
-3. Confirm User A's conversation does not appear.
-4. Request User A's conversation/messages URL while signed in as User B and confirm it returns `404`.
-5. Confirm User B cannot rename or delete User A's conversation.
+3. Confirm the shared conversation appears, its messages are readable, and User B can continue it.
+4. Confirm User B cannot rename or delete the shared conversation created by User A.
+5. As User A, enable **Private question**, send a new question, and confirm a private conversation is created.
+6. Sign in as User B and confirm that private conversation does not appear and its direct messages URL returns `404`.
 
-RLS is a second line of defence; every server query also scopes ownership to the verified `supabase.auth.getUser()` ID. The browser never supplies an authoritative `user_id`.
+RLS is a second line of defence. Server routes verify the authenticated user and conversation visibility; private reads and every rename/delete remain scoped to the verified `supabase.auth.getUser()` ID. The browser never supplies an authoritative `user_id`.
 
 ### 3. Configure Cloudflare
 

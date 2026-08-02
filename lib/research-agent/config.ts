@@ -61,7 +61,7 @@ function readBoolean(name: string, fallback: boolean) {
 
 export function getResearchAgentLimits() {
   return {
-    conversationMemoryEnabled: readBoolean("AI_CONVERSATION_MEMORY_ENABLED", false),
+    conversationMemoryEnabled: readBoolean("AI_CONVERSATION_MEMORY_ENABLED", true),
     contextMessageLimit: readPositiveInteger("AI_CONTEXT_MESSAGE_LIMIT", 20, 100),
     dailyMessageLimit: readPositiveInteger("AI_DAILY_MESSAGE_LIMIT", 100, 10_000),
     maxMessageLength: readPositiveInteger("AI_MAX_MESSAGE_LENGTH", 20_000, 100_000),

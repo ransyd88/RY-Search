@@ -46,14 +46,15 @@ export async function POST(request: Request) {
 
   const { data: conversation, error: conversationError } = await auth.supabase
     .from("ai_conversations")
-    .select("id,title")
+    .select("id,title,visibility,user_id")
     .eq("id", conversationId.value)
-    .eq("user_id", auth.user.id)
     .eq("agent_id", RESEARCH_AGENT_ID)
     .is("archived_at", null)
     .maybeSingle();
   if (conversationError) return apiError(503, "DATABASE_ERROR", "Unable to verify this conversation.");
-  if (!conversation) return apiError(404, "NOT_FOUND", "Conversation not found.");
+  if (!conversation || (conversation.visibility === "private" && conversation.user_id !== auth.user.id)) {
+    return apiError(404, "NOT_FOUND", "Conversation not found.");
+  }
 
   const openAIConfig = await getOpenAIConfigForRequest();
   const adminSupabase = await createSupabaseAdminClient();
@@ -118,18 +119,16 @@ export async function POST(request: Request) {
   let generatedTitle: string | undefined;
   if (conversation.title === "New conversation") {
     generatedTitle = titleFromMessage(message.value);
-    await auth.supabase
+    await adminSupabase
       .from("ai_conversations")
       .update({ title: generatedTitle, updated_at: new Date().toISOString() })
-      .eq("id", conversationId.value)
-      .eq("user_id", auth.user.id);
+      .eq("id", conversationId.value);
   }
 
   const { data: recentRows, error: historyError } = await auth.supabase
     .from("ai_messages")
     .select("role,content")
     .eq("conversation_id", conversationId.value)
-    .eq("user_id", auth.user.id)
     .eq("status", "completed")
     .order("created_at", { ascending: false })
     .limit(limits.conversationMemoryEnabled ? limits.contextMessageLimit : 1);
@@ -196,8 +195,8 @@ export async function POST(request: Request) {
               .single();
             if (assistantError || !assistantMessage) throw new Error("assistant_save_failed");
             await Promise.all([
-              auth.supabase.from("ai_conversations").update({ updated_at: new Date().toISOString() })
-                .eq("id", conversationId.value).eq("user_id", auth.user.id),
+              adminSupabase.from("ai_conversations").update({ updated_at: new Date().toISOString() })
+                .eq("id", conversationId.value),
               adminSupabase.rpc("record_ai_token_usage", {
                 p_user_id: auth.user.id,
                 p_input_tokens: usageInfo?.input_tokens ?? 0,
