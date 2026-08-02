@@ -175,6 +175,7 @@ TURNSTILE_SECRET_KEY=your_turnstile_secret_key
 TURNSTILE_EXPECTED_HOSTNAME=rycapital.com.au
 AI_DAILY_MESSAGE_LIMIT=100
 AI_MAX_OUTPUT_TOKENS=2000
+AI_CONVERSATION_MEMORY_ENABLED=false
 AI_CONTEXT_MESSAGE_LIMIT=20
 AI_MAX_MESSAGE_LENGTH=20000
 AI_PER_MINUTE_LIMIT=10
@@ -185,6 +186,13 @@ The UI exposes only two server-defined research modes: `LUNA` uses `gpt-5.6-luna
 with medium reasoning, while `TERRA` uses `gpt-5.6-terra` with high reasoning.
 The default is `LUNA`. The browser submits only the fixed mode identifier and
 cannot select an arbitrary model, replace system instructions, or enable tools.
+
+Conversation memory is temporarily disabled by default. With
+`AI_CONVERSATION_MEMORY_ENABLED=false`, each AI request receives only the
+current user message; saved conversation history remains visible to its owner
+but is not sent back to the model as context. Account isolation remains active
+at every layer. Set this server-only variable to `true` later to restore
+same-conversation context using `AI_CONTEXT_MESSAGE_LIMIT`.
 
 ### 2. Apply the Supabase migration
 

@@ -132,7 +132,7 @@ export async function POST(request: Request) {
     .eq("user_id", auth.user.id)
     .eq("status", "completed")
     .order("created_at", { ascending: false })
-    .limit(limits.contextMessageLimit);
+    .limit(limits.conversationMemoryEnabled ? limits.contextMessageLimit : 1);
   if (historyError) {
     await adminSupabase.rpc("release_ai_generation", { p_user_id: auth.user.id, p_generation_id: generationId });
     endGeneration(auth.user.id);

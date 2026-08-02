@@ -203,6 +203,23 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
+
   const changeLanguage = (nextLanguage: HomeLanguage) => {
     setLanguage(nextLanguage);
     setMenuOpen(false);
@@ -264,6 +281,13 @@ export default function Home() {
           </div>
         </nav>
 
+        <a
+          className="mobile-login-shortcut"
+          href={language === "zh" ? "/login?lang=zh" : "/login"}
+        >
+          {content.privateAccess}
+        </a>
+
         <button
           className={`menu-toggle ${menuOpen ? "is-open" : ""}`}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -274,32 +298,42 @@ export default function Home() {
           <span />
         </button>
 
-        <div className={`mobile-menu ${menuOpen ? "is-open" : ""}`}>
-          <span className="eyebrow">{content.navigate}</span>
-          {navItems.map((item, index) => (
+        {menuOpen && (
+          <>
             <button
-              key={item.id}
-              style={{ "--item-delay": `${index * 70}ms` } as React.CSSProperties}
-              onClick={() => scrollTo(item.id)}
-            >
-              <span>0{index + 1}</span>
-              {item.label}
-            </button>
-          ))}
-          <a
-            className="mobile-private-access"
-            href={language === "zh" ? "/login?lang=zh" : "/login"}
-            style={{ "--item-delay": `${navItems.length * 70}ms` } as React.CSSProperties}
-          >
-            <span>05</span>
-            {content.privateAccess}
-          </a>
-          <div className="mobile-language-switch language-switch" style={{ "--item-delay": `${(navItems.length + 1) * 70}ms` } as React.CSSProperties}>
-            <button className={language === "en" ? "active" : ""} onClick={() => changeLanguage("en")} lang="en">EN</button>
-            <span aria-hidden="true" />
-            <button className={language === "zh" ? "active" : ""} onClick={() => changeLanguage("zh")} lang="zh-CN">中文</button>
-          </div>
-        </div>
+              className="mobile-menu-backdrop"
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              aria-label={language === "zh" ? "关闭导航" : "Close navigation"}
+            />
+            <div className="mobile-menu is-open" role="dialog" aria-modal="true" aria-label={content.navigate}>
+              <span className="eyebrow">{content.navigate}</span>
+              {navItems.map((item, index) => (
+                <button
+                  key={item.id}
+                  style={{ "--item-delay": `${index * 70}ms` } as React.CSSProperties}
+                  onClick={() => scrollTo(item.id)}
+                >
+                  <span>0{index + 1}</span>
+                  {item.label}
+                </button>
+              ))}
+              <a
+                className="mobile-private-access"
+                href={language === "zh" ? "/login?lang=zh" : "/login"}
+                style={{ "--item-delay": `${navItems.length * 70}ms` } as React.CSSProperties}
+              >
+                <span>05</span>
+                {content.privateAccess}
+              </a>
+              <div className="mobile-language-switch language-switch" style={{ "--item-delay": `${(navItems.length + 1) * 70}ms` } as React.CSSProperties}>
+                <button className={language === "en" ? "active" : ""} onClick={() => changeLanguage("en")} lang="en">EN</button>
+                <span aria-hidden="true" />
+                <button className={language === "zh" ? "active" : ""} onClick={() => changeLanguage("zh")} lang="zh-CN">中文</button>
+              </div>
+            </div>
+          </>
+        )}
       </header>
 
       <section

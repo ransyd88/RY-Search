@@ -52,8 +52,16 @@ function readPositiveInteger(name: string, fallback: number, maximum: number) {
   return Number.isFinite(value) && value > 0 ? Math.min(value, maximum) : fallback;
 }
 
+function readBoolean(name: string, fallback: boolean) {
+  const value = process.env[name]?.trim().toLowerCase();
+  if (value === "true" || value === "1" || value === "yes") return true;
+  if (value === "false" || value === "0" || value === "no") return false;
+  return fallback;
+}
+
 export function getResearchAgentLimits() {
   return {
+    conversationMemoryEnabled: readBoolean("AI_CONVERSATION_MEMORY_ENABLED", false),
     contextMessageLimit: readPositiveInteger("AI_CONTEXT_MESSAGE_LIMIT", 20, 100),
     dailyMessageLimit: readPositiveInteger("AI_DAILY_MESSAGE_LIMIT", 100, 10_000),
     maxMessageLength: readPositiveInteger("AI_MAX_MESSAGE_LENGTH", 20_000, 100_000),
