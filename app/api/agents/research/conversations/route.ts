@@ -22,6 +22,7 @@ export async function GET() {
     : apiJson({ conversations: (data ?? []).map(({ user_id, ...conversation }) => ({
       ...conversation,
       can_manage: user_id === auth.user.id,
+      can_delete: conversation.visibility === "shared" || user_id === auth.user.id,
     })) });
 }
 
@@ -54,5 +55,5 @@ export async function POST(request: Request) {
 
   return error || !data
     ? apiError(503, "DATABASE_ERROR", "Unable to create a conversation.")
-    : apiJson({ conversation: { ...data, can_manage: true } }, 201);
+    : apiJson({ conversation: { ...data, can_manage: true, can_delete: true } }, 201);
 }

@@ -207,7 +207,10 @@ Conversation memory is enabled by default. Shared conversations and their
 same-conversation context are visible to every authenticated, administrator-created
 portal account. Selecting **Private question** creates a separate private
 conversation; only its creator can read it or include it in AI context. Shared
-conversation creators retain exclusive rename/delete rights. Set
+conversation creators retain exclusive rename rights, while any authenticated
+workspace member can delete a shared conversation for the whole team after an
+explicit confirmation. Private conversations remain owner-only for every read,
+rename and delete operation. Set
 `AI_CONVERSATION_MEMORY_ENABLED=false` only as an emergency switch to stop all
 cross-turn context while leaving saved history intact.
 

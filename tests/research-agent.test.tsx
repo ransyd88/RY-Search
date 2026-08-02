@@ -163,7 +163,7 @@ test("migration enforces ownership, RLS, chronological storage and atomic limits
   assert.match(visibilitySql, /revoke all on public\.ai_conversations, public\.ai_messages from anon/i);
 });
 
-test("conversation endpoints enforce shared reads and owner-only private management", async () => {
+test("conversation endpoints enforce shared reads, shared deletion and owner-only private management", async () => {
   const collection = await readFile(path.join(root, "app/api/agents/research/conversations/route.ts"), "utf8");
   const item = await readFile(path.join(root, "app/api/agents/research/conversations/[id]/route.ts"), "utf8");
   const messages = await readFile(path.join(root, "app/api/agents/research/conversations/[id]/messages/route.ts"), "utf8");
@@ -173,8 +173,11 @@ test("conversation endpoints enforce shared reads and owner-only private managem
   assert.match(item, /export async function DELETE/);
   assert.doesNotMatch(collection, /\.eq\("user_id", auth\.user\.id\)/);
   assert.match(collection, /can_manage: user_id === auth\.user\.id/);
+  assert.match(collection, /can_delete: conversation\.visibility === "shared" \|\| user_id === auth\.user\.id/);
   assert.match(collection, /validateConversationVisibility/);
-  assert.match(item, /\.eq\("user_id", auth\.user\.id\)/);
+  assert.match(item, /conversation\.visibility === "private" && conversation\.user_id !== auth\.user\.id/);
+  assert.match(item, /createSupabaseAdminClient/);
+  assert.match(item, /adminSupabase[\s\S]*\.from\("ai_conversations"\)[\s\S]*\.delete\(\)/);
   assert.match(messages, /conversation\.visibility === "private" && conversation\.user_id !== auth\.user\.id/);
   assert.match(chat, /conversation\.visibility === "private" && conversation\.user_id !== auth\.user\.id/);
   assert.doesNotMatch(messages, /\.eq\("conversation_id", id\.value\)[\s\S]{0,100}\.eq\("user_id", auth\.user\.id\)/);
