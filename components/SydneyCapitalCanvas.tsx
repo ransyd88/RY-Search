@@ -47,6 +47,7 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
     let animationFrame = 0;
     let lastFrame = 0;
     let visible = true;
+    const startedAt = performance.now();
 
     const resize = () => {
       const bounds = canvas.getBoundingClientRect();
@@ -67,8 +68,8 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
       context.save();
       context.lineCap = "round";
       context.lineJoin = "round";
-      context.strokeStyle = "rgba(229, 211, 164, 0.36)";
-      context.lineWidth = 1;
+      context.strokeStyle = "rgba(242, 220, 164, 0.66)";
+      context.lineWidth = 1.35;
 
       context.beginPath();
       context.moveTo(width * 0.05, harborY);
@@ -76,7 +77,7 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
       context.bezierCurveTo(width * 0.62, height * 0.65, width * 0.76, height * 0.75, width * 0.95, height * 0.69);
       context.stroke();
 
-      context.strokeStyle = "rgba(229, 211, 164, 0.48)";
+      context.strokeStyle = "rgba(250, 232, 184, 0.78)";
       context.beginPath();
       context.moveTo(width * 0.08, harborY);
       context.quadraticCurveTo(width * 0.3, height * 0.4, width * 0.53, harborY);
@@ -90,14 +91,14 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
         const x = width * (0.1 + index * 0.05);
         const normalized = (x / width - 0.305) / 0.205;
         const archY = height * (0.4 + 0.3 * normalized * normalized);
-        context.strokeStyle = "rgba(229, 211, 164, 0.2)";
+        context.strokeStyle = "rgba(242, 220, 164, 0.38)";
         context.beginPath();
         context.moveTo(x, harborY);
         context.lineTo(x, archY);
         context.stroke();
       }
 
-      context.strokeStyle = "rgba(245, 237, 217, 0.46)";
+      context.strokeStyle = "rgba(251, 240, 211, 0.72)";
       context.beginPath();
       context.moveTo(width * 0.63, harborY);
       context.quadraticCurveTo(width * 0.67, height * 0.55, width * 0.71, harborY);
@@ -112,6 +113,9 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
     const drawNetwork = (elapsed: number) => {
       const source = point(centre);
       const activeLabels = labels[language];
+      const reveal = reducedMotion
+        ? 1
+        : Math.min(1, Math.max(0, (elapsed - startedAt - 220) / 1650));
 
       nodePositions.forEach((node, index) => {
         const destination = point(node);
@@ -121,58 +125,70 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
           y: (source.y + destination.y) / 2 - height * 0.065,
         };
 
-        context.strokeStyle = "rgba(220, 196, 139, 0.42)";
-        context.lineWidth = 0.85;
+        context.strokeStyle = "rgba(237, 207, 142, 0.74)";
+        context.lineWidth = 1.25;
         context.beginPath();
         context.moveTo(source.x, source.y);
-        context.quadraticCurveTo(control.x, control.y, destination.x, destination.y);
+        for (let step = 1; step <= 32; step += 1) {
+          const progress = Math.min(reveal, step / 32);
+          const current = quadraticPoint(source, control, destination, progress);
+          context.lineTo(current.x, current.y);
+          if (progress >= reveal) break;
+        }
         context.stroke();
 
-        const pulse = reducedMotion ? 0.55 : 0.45 + Math.sin(elapsed * 0.0018 + index) * 0.15;
+        if (reveal < 0.96) return;
+
+        const pulse = reducedMotion ? 0.72 : 0.68 + Math.sin(elapsed * 0.0022 + index) * 0.22;
         context.fillStyle = `rgba(240, 222, 177, ${pulse})`;
         context.beginPath();
-        context.arc(destination.x, destination.y, 2.2, 0, Math.PI * 2);
+        context.arc(destination.x, destination.y, 3.1, 0, Math.PI * 2);
         context.fill();
 
-        context.strokeStyle = "rgba(240, 222, 177, 0.22)";
+        context.strokeStyle = "rgba(250, 229, 176, 0.54)";
         context.beginPath();
-        context.arc(destination.x, destination.y, 7 + pulse * 3, 0, Math.PI * 2);
+        context.arc(destination.x, destination.y, 9 + pulse * 4, 0, Math.PI * 2);
         context.stroke();
 
-        context.fillStyle = "rgba(249, 247, 240, 0.82)";
-        context.font = language === "zh" ? "500 10px Inter, sans-serif" : "500 9px Inter, sans-serif";
+        context.fillStyle = "rgba(255, 253, 246, 0.98)";
+        context.font = language === "zh" ? "600 11px Inter, sans-serif" : "600 10px Inter, sans-serif";
         context.letterSpacing = language === "zh" ? "1px" : "1.5px";
         context.textAlign = node.x > 0.6 ? "right" : "left";
         const labelX = destination.x + (node.x > 0.6 ? -12 : 12);
         context.fillText(activeLabels[index], labelX, destination.y - 9);
 
         if (!reducedMotion) {
-          for (let particle = 0; particle < 2; particle += 1) {
-            const progress = (elapsed * 0.000055 + index * 0.19 + particle * 0.49) % 1;
+          for (let particle = 0; particle < 3; particle += 1) {
+            const rawProgress = (elapsed * 0.000095 + index * 0.19 + particle * 0.33) % 1;
+            const progress = particle === 2 ? 1 - rawProgress : rawProgress;
             const current = quadraticPoint(source, control, destination, progress);
-            const glow = context.createRadialGradient(current.x, current.y, 0, current.x, current.y, 7);
-            glow.addColorStop(0, "rgba(255, 235, 183, 0.9)");
-            glow.addColorStop(0.35, "rgba(225, 197, 134, 0.42)");
+            const glow = context.createRadialGradient(current.x, current.y, 0, current.x, current.y, 10);
+            glow.addColorStop(0, "rgba(255, 247, 218, 1)");
+            glow.addColorStop(0.3, "rgba(235, 204, 137, 0.72)");
             glow.addColorStop(1, "rgba(225, 197, 134, 0)");
             context.fillStyle = glow;
             context.beginPath();
-            context.arc(current.x, current.y, 7, 0, Math.PI * 2);
+            context.arc(current.x, current.y, 10, 0, Math.PI * 2);
             context.fill();
           }
         }
       });
 
-      const centrePulse = reducedMotion ? 0 : Math.sin(elapsed * 0.002) * 2;
-      context.fillStyle = "rgba(249, 247, 240, 0.94)";
+      const centrePulse = reducedMotion ? 0 : Math.sin(elapsed * 0.002) * 3;
+      context.fillStyle = "rgba(255, 253, 246, 1)";
       context.beginPath();
-      context.arc(source.x, source.y, 3.2, 0, Math.PI * 2);
+      context.arc(source.x, source.y, 4.2, 0, Math.PI * 2);
       context.fill();
-      context.strokeStyle = "rgba(220, 196, 139, 0.56)";
-      context.beginPath();
-      context.arc(source.x, source.y, 13 + centrePulse, 0, Math.PI * 2);
-      context.stroke();
-      context.fillStyle = "rgba(249, 247, 240, 0.88)";
-      context.font = "600 9px Inter, sans-serif";
+      for (let ring = 0; ring < 3; ring += 1) {
+        const phase = reducedMotion ? ring / 3 : (elapsed * 0.00022 + ring / 3) % 1;
+        context.strokeStyle = `rgba(239, 209, 145, ${0.72 * (1 - phase)})`;
+        context.lineWidth = 1.2;
+        context.beginPath();
+        context.arc(source.x, source.y, 12 + phase * 34 + centrePulse, 0, Math.PI * 2);
+        context.stroke();
+      }
+      context.fillStyle = "rgba(255, 253, 246, 1)";
+      context.font = "700 10px Inter, sans-serif";
       context.letterSpacing = "2px";
       context.textAlign = "left";
       context.fillText(language === "zh" ? "悉尼" : "SYDNEY", source.x + 17, source.y + 3);
@@ -181,9 +197,10 @@ export default function SydneyCapitalCanvas({ language }: SydneyCapitalCanvasPro
     const draw = (elapsed: number) => {
       context.clearRect(0, 0, width, height);
 
-      const wash = context.createRadialGradient(width * 0.56, height * 0.56, 0, width * 0.56, height * 0.56, width * 0.48);
-      wash.addColorStop(0, "rgba(12, 31, 47, 0.06)");
-      wash.addColorStop(1, "rgba(8, 24, 39, 0)");
+      const wash = context.createRadialGradient(width * 0.56, height * 0.56, 0, width * 0.56, height * 0.56, width * 0.62);
+      wash.addColorStop(0, "rgba(8, 27, 43, 0.48)");
+      wash.addColorStop(0.48, "rgba(8, 27, 43, 0.27)");
+      wash.addColorStop(1, "rgba(8, 24, 39, 0.08)");
       context.fillStyle = wash;
       context.fillRect(0, 0, width, height);
 

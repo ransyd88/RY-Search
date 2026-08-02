@@ -49,6 +49,15 @@ export function LoginForm({
         />
       </label>
 
+      <label className="login-remember">
+        <input
+          type="checkbox"
+          name="remember"
+          disabled={!ready || pending}
+        />
+        <span>{zh ? "30 天内保持登录" : "Keep me signed in for 30 days"}</span>
+      </label>
+
       {turnstileSiteKey && (
         <TurnstileWidget
           attempt={state.attempt}

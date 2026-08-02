@@ -42,6 +42,7 @@ export default async function LoginPage({
           alt="R&Y Capital"
           width={346}
           height={109}
+          unoptimized
         />
       </Link>
       <div className="login-language">

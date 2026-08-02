@@ -98,6 +98,7 @@ export default async function PortalPage({
             alt="R&Y Capital"
             width={346}
             height={109}
+            unoptimized
           />
           <span>
             <small>{content.portalName}</small>
@@ -139,6 +140,7 @@ export default async function PortalPage({
             alt=""
             width={495}
             height={411}
+            unoptimized
           />
         </Link>
         <LanguageSwitch

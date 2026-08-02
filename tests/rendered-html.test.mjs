@@ -52,6 +52,9 @@ test("homepage is server rendered with canonical SEO metadata", async () => {
   assert.match(html, /Sydney, Australia/i);
   assert.match(html, /Built for the/i);
   assert.match(html, /Private Capital\./i);
+  assert.match(html, /src="\/brand\/wordmark-slate\.png"/i);
+  assert.match(html, /src="\/images\/hero-architecture\.jpg"/i);
+  assert.doesNotMatch(html, /\/_next\/image|\/_vinext\/image/i);
 });
 
 test("robots.txt allows public crawling and excludes private routes", async () => {
@@ -85,6 +88,9 @@ test("private routes are noindex and the portal remains authentication protected
 
   const loginHtml = await loginResponse.text();
   assert.match(loginHtml, /name="robots" content="noindex, nofollow, noarchive"/i);
+  assert.match(loginHtml, /src="\/brand\/wordmark-slate\.png"/i);
+  assert.match(loginHtml, /Keep me signed in for 30 days/i);
+  assert.doesNotMatch(loginHtml, /\/_next\/image|\/_vinext\/image/i);
   assert.doesNotMatch(loginHtml, /rel="canonical"/i);
   assert.doesNotMatch(loginHtml, /property="og:/i);
 
