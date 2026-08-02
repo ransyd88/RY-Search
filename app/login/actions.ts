@@ -17,6 +17,7 @@ export async function login(
   const language = formData.get("language") === "zh" ? "zh" : "en";
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const remember = formData.get("remember") === "on";
   const turnstileToken = String(formData.get("cf-turnstile-response") ?? "");
   const attempt = previousState.attempt + 1;
 
@@ -40,7 +41,7 @@ export async function login(
     };
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient({ remember });
   if (!supabase) {
     return {
       error: language === "zh"

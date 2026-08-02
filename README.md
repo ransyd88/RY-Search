@@ -89,6 +89,10 @@ The public website remains available at `/`. Private access is implemented with:
 - `proxy.ts`: refreshes Supabase Auth cookies before login and portal requests.
 - A second `supabase.auth.getUser()` check inside the portal Server Component.
 - A server-side logout action that clears the current Supabase session.
+- An optional **Keep me signed in for 30 days** checkbox. Without it, auth
+  cookies expire when the browser session closes; logout clears both modes.
+- Cloudflare Turnstile on every sign-in, validated on the server before
+  credentials are submitted to Supabase Auth.
 - `force-dynamic` and private no-store responses on authenticated routes.
 
 The portal is not a static client-side route. Its HTML is generated only after the server confirms the current Supabase user. Do not convert `/portal` to a static export.
@@ -130,6 +134,18 @@ In the Supabase dashboard:
 4. Open **Authentication > Users** and create each authorised user administratively.
 5. Configure a suitable JWT expiry and, where your plan supports it, session lifetime, inactivity timeout, and single-session settings.
 6. Review Auth rate limits and attack-protection settings before production use.
+
+Turnstile is not decorative client-side CAPTCHA: the login Server Action checks
+the token, expected action and production hostname using the secret key. Failed
+credentials return a generic response so the page does not reveal whether an
+email exists. Keep Supabase Auth rate limiting enabled as the second layer of
+brute-force protection. For unusually hostile traffic, add a Cloudflare WAF
+rate-limit rule for `POST /login`; do not replace Turnstile with a home-grown
+client-only counter.
+
+The 30-day option controls only this browser's secure HTTP-only auth cookies.
+Administrators can still revoke a user or session immediately in Supabase, and
+Supabase project session-lifetime policies remain authoritative.
 
 The website intentionally contains no sign-up UI or sign-up code. Disabling sign-ups in Supabase is still required because the publishable key is public.
 
@@ -278,6 +294,14 @@ The Research Agent card is connected. The remaining cards are intentionally non-
 - Investment Dashboard
 
 Replace those values only with approved protected internal routes or trusted external destinations. Adding a card link does not protect the destination; each internal tool and data API must enforce its own server-side authentication and Supabase RLS policies.
+
+## Image delivery
+
+All public brand and photography paths are rooted under `public/brand` and
+`public/images`. Next runtime image optimisation is disabled because the
+Cloudflare/Vinext Worker serves these files directly; important logo instances
+also opt out explicitly. Automated tests verify every currently referenced
+brand, cursor, social and photography asset exists before deployment.
 
 ## Current security limitations
 

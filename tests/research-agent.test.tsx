@@ -16,8 +16,50 @@ import {
   validateMessage,
   validateTitle,
 } from "../lib/research-agent/validation";
+import {
+  AUTH_PERSISTENCE_SECONDS,
+  authCookieOptions,
+  persistenceCookieOptions,
+  remembersLogin,
+} from "../lib/supabase/auth-cookie";
 
 const root = process.cwd();
+
+test("brand and photography assets referenced by the interface exist", async () => {
+  const assets = [
+    "public/brand/wordmark-slate.png",
+    "public/brand/wordmark-white.png",
+    "public/brand/wordmark-gold.png",
+    "public/brand/monogram-slate.png",
+    "public/brand/monogram-white.png",
+    "public/brand/monogram-gold.png",
+    "public/brand/cursor-arrow-right-glow-small-v4.png",
+    "public/brand/og-social.jpg",
+    "public/images/hero-architecture.jpg",
+    "public/images/concrete-facade.jpg",
+    "public/images/blue-facade.jpg",
+  ];
+
+  await Promise.all(assets.map((asset) => readFile(path.join(root, asset))));
+});
+
+test("remember-me creates a 30-day cookie while the default remains session-only", () => {
+  assert.equal(remembersLogin("30d"), true);
+  assert.equal(remembersLogin("session"), false);
+
+  const persistent = authCookieOptions("token", { path: "/" }, true);
+  assert.equal(persistent.maxAge, AUTH_PERSISTENCE_SECONDS);
+  assert.ok(persistent.expires instanceof Date);
+
+  const session = authCookieOptions(
+    "token",
+    { expires: new Date(), maxAge: 999, path: "/" },
+    false,
+  );
+  assert.equal(session.maxAge, undefined);
+  assert.equal(session.expires, undefined);
+  assert.equal(persistenceCookieOptions(false).httpOnly, true);
+});
 
 test("request validation rejects missing, oversized and invalid input", () => {
   assert.equal(validateMessage("   ", 100).ok, false);

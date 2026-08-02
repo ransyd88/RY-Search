@@ -504,7 +504,7 @@ img {
     108deg,
     transparent 34%,
     rgba(255, 255, 255, 0.02) 44%,
-    rgba(255, 255, 255, 0.18) 50%,
+    rgba(238, 216, 164, 0.34) 50%,
     rgba(255, 255, 255, 0.03) 56%,
     transparent 66%
   );
@@ -517,7 +517,7 @@ img {
 }
 
 .hero-image-wrap::after {
-  background: rgba(59, 74, 87, 0.09);
+  background: linear-gradient(135deg, rgba(17, 35, 50, 0.18), rgba(15, 31, 45, 0.03) 56%, rgba(7, 23, 37, 0.22));
   content: "";
   inset: 0;
   pointer-events: none;
@@ -528,7 +528,8 @@ img {
   animation: capital-network-enter 1.4s 1.15s both ease;
   height: 100%;
   inset: 0;
-  opacity: 0.78;
+  filter: drop-shadow(0 3px 9px rgba(5, 17, 27, 0.42));
+  opacity: 0.98;
   pointer-events: none;
   position: absolute;
   width: 100%;
@@ -1954,6 +1955,30 @@ img {
 
 .login-form label:focus-within {
   border-color: var(--champagne);
+}
+
+.login-form .login-remember {
+  align-items: center;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  gap: 11px;
+  margin: -5px 0 22px;
+  padding: 0;
+  width: fit-content;
+}
+
+.login-form .login-remember input {
+  accent-color: var(--deep-slate);
+  height: 15px;
+  margin: 0;
+  width: 15px;
+}
+
+.login-form .login-remember span {
+  font-size: 9px;
+  letter-spacing: 0.11em;
+  margin: 0;
 }
 
 .login-form input:disabled {

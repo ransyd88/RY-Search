@@ -375,6 +375,7 @@ export default function Home() {
               width={1800}
               height={3198}
               priority
+              unoptimized
             />
             <SydneyCapitalCanvas language={language} />
             <span className="image-caption">{content.imageCaption}</span>
@@ -403,6 +404,7 @@ export default function Home() {
           height={411}
           loading="lazy"
           decoding="async"
+          unoptimized
         />
         <div className="section-label" data-reveal>
           <span>01</span>
@@ -446,6 +448,7 @@ export default function Home() {
                 height={index === 0 || index === 3 ? 3198 : 2400}
                 loading="lazy"
                 decoding="async"
+                unoptimized
               />
               <div className="focus-overlay" />
               <div className="focus-inner section-shell">

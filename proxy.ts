@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabasePublicConfig } from "./lib/supabase/config";
+import {
+  AUTH_PERSISTENCE_COOKIE,
+  authCookieOptions,
+  remembersLogin,
+} from "./lib/supabase/auth-cookie";
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
@@ -9,6 +14,7 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Cache-Control", "private, no-store");
 
   if (!config) return response;
+  const remember = remembersLogin(request.cookies.get(AUTH_PERSISTENCE_COOKIE)?.value);
 
   const supabase = createServerClient(config.url, config.key, {
     cookies: {
@@ -18,7 +24,7 @@ export async function proxy(request: NextRequest) {
       setAll(cookiesToSet, cacheHeaders) {
         cookiesToSet.forEach(({ name, value, options }) => {
           request.cookies.set(name, value);
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, authCookieOptions(value, options, remember));
         });
 
         Object.entries(cacheHeaders).forEach(([name, value]) => {
